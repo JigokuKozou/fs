@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"os"
 )
@@ -20,7 +22,15 @@ func main() {
 }
 
 func parseFlag() (string, error) {
-	panic("unimplemented")
+	var rootPath string
+	flag.StringVar(&rootPath, "root", "", "Путь до корневой директории")
+	flag.Parse()
+
+	if rootPath == "" {
+		return "", fmt.Errorf("флаг root не задан")
+	}
+
+	return rootPath, nil
 }
 
 func getRootDirEntry(path string) ([]os.DirEntry, error) {

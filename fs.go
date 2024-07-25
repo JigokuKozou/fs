@@ -68,28 +68,25 @@ func getRootInfo(rootPath string) ([]rootFileInfo, error) {
 		return nil, fmt.Errorf("ошибка чтения корневой директории [rootPath=%s]: %w", rootPath, err)
 	}
 
-	rootInfo, err := getRootFilesInfo(rootPath, rootEntries)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка получения информации о файлах корневой директории [rootPath=%s]: %w",
-			rootPath, err)
-	}
+	rootInfo := getRootFilesInfo(rootPath, rootEntries)
 
 	return rootInfo, nil
 }
 
-func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) ([]rootFileInfo, error) {
+func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo {
 	var filesInfo []rootFileInfo
 
 	for _, dirEntry := range dirEntries {
 		dirPath := filepath.Join(rootPath, dirEntry.Name())
 		fileInfo, err := getRootFileInfo(dirPath, dirEntry)
 		if err != nil {
-			return nil, fmt.Errorf("не удалось получить информацию о файле [dirEntry=%v]: %w", dirEntry, err)
+			fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %ss", dirEntry, err)
+			continue
 		}
 		filesInfo = append(filesInfo, fileInfo)
 	}
 
-	return filesInfo, nil
+	return filesInfo
 }
 
 func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error) {

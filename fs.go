@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"time"
 )
 
 type rootFileInfo struct {
@@ -27,6 +28,8 @@ func main() {
 		}
 	}()
 
+	start := time.Now()
+
 	rootPath, sortType, err := parseFlag()
 	if err != nil {
 		log.Fatalln(err)
@@ -42,6 +45,8 @@ func main() {
 	}
 
 	printTableRootInfo(rootInfos)
+
+	log.Printf("Время выполнения %.2f сек", time.Since(start).Seconds())
 }
 
 func parseFlag() (string, string, error) {

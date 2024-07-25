@@ -135,15 +135,16 @@ func calculateDirSize(dirPath string) (int64, error) {
 func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 	var cmp func(a, b rootFileInfo) int
 
-	if sortType == SortAsc {
+	switch sortType {
+	case SortAsc:
 		cmp = func(a, b rootFileInfo) int {
 			return int(a.Size - b.Size)
 		}
-	} else if sortType == SortDesc {
+	case SortDesc:
 		cmp = func(a, b rootFileInfo) int {
 			return int(b.Size - a.Size)
 		}
-	} else {
+	default:
 		return fmt.Errorf("не известный тип сортировки [sortType=%s]", sortType)
 	}
 

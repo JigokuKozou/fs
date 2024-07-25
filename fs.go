@@ -109,7 +109,7 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 	if fileInfo.IsDir {
 		size, err := calculateDirSize(dirPath)
 		if err != nil {
-			return rootFileInfo{}, err // TODO fmt err
+			return rootFileInfo{}, fmt.Errorf("неудалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 		}
 
 		fileInfo.Size = size

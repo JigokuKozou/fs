@@ -53,7 +53,7 @@ func parseFlag() (string, string, error) {
 
 	if rootPath == "" || sort == "" {
 		flag.Usage()
-		return "", "", fmt.Errorf("неуказан путь до корневой директории или тип сортировки")
+		return "", "", fmt.Errorf("не указан путь до корневой директории или тип сортировки")
 	}
 	if sort != SortDesc && sort != SortAsc {
 		return "", "", fmt.Errorf("неверное значение флага sort [sort=%s]", sort)
@@ -84,7 +84,7 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) ([]rootFileInfo
 		dirPath := filepath.Join(rootPath, dirEntry.Name())
 		fileInfo, err := getRootFileInfo(dirPath, dirEntry)
 		if err != nil {
-			return nil, fmt.Errorf("неудалось получить информацию о файле [dirEntry=%v]: %w", dirEntry, err)
+			return nil, fmt.Errorf("не удалось получить информацию о файле [dirEntry=%v]: %w", dirEntry, err)
 		}
 		filesInfo = append(filesInfo, fileInfo)
 	}
@@ -107,7 +107,7 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 	if fileInfo.IsDir {
 		size, err := calculateDirSize(dirPath)
 		if err != nil {
-			return rootFileInfo{}, fmt.Errorf("неудалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+			return rootFileInfo{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 		}
 
 		fileInfo.Size = size
@@ -120,7 +120,7 @@ func calculateDirSize(dirPath string) (int64, error) {
 	var size int64
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("неудалось получить информацию о файле [dirPath=%s]: %s\n", path, err)
+			log.Printf("не удалось получить информацию о файле [dirPath=%s]: %s\n", path, err)
 
 			return nil
 		}
@@ -129,7 +129,7 @@ func calculateDirSize(dirPath string) (int64, error) {
 		return nil
 	})
 	if err != nil {
-		return 0, fmt.Errorf("неудалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+		return 0, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 	}
 
 	return size, nil
@@ -147,7 +147,7 @@ func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 			return int(b.Size - a.Size)
 		}
 	} else {
-		return fmt.Errorf("неизвестный тип сортировки [sortType=%s]", sortType)
+		return fmt.Errorf("не известный тип сортировки [sortType=%s]", sortType)
 	}
 
 	slices.SortFunc(rootInfos, cmp)

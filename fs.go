@@ -53,7 +53,8 @@ func parseFlag() (string, string, error) {
 
 	if rootPath == "" || sort == "" {
 		flag.Usage()
-		return "", "", fmt.Errorf("не указан путь до корневой директории или тип сортировки")
+		return "", "", fmt.Errorf("не указан путь до корневой директории или тип сортировки [rootPath=%s, sort=%s]",
+			rootPath, sort)
 	}
 	if sort != SortDesc && sort != SortAsc {
 		return "", "", fmt.Errorf("неверное значение флага sort [sort=%s]", sort)

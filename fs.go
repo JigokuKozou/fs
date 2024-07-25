@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 type rootFileInfo struct {
@@ -16,6 +17,11 @@ type rootFileInfo struct {
 	Size  int64
 }
 
+const (
+	SortDesc = "desc"
+	SortAsc  = "asc"
+)
+
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -23,34 +29,39 @@ func main() {
 		}
 	}()
 
-	rootPath, err := parseFlag()
+	rootPath, sortType, err := parseFlag()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	rootInfo, err := getRootInfo(rootPath)
+	rootInfos, err := getRootInfo(rootPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	printTableRootInfo(rootInfo)
+	if err := sortRootInfos(rootInfos, sortType); err != nil {
+		log.Fatalln(err)
+	}
+
+	printTableRootInfo(rootInfos)
 }
 
-func parseFlag() (string, error) {
+func parseFlag() (string, string, error) {
 	var rootPath string
-	var sortType string
+	var sort string
 	flag.StringVar(&rootPath, "root", "", "Путь до корневой директории")
-	flag.StringVar(&sortType, "sort", "", "Путь до корневой директории")
+	flag.StringVar(&sort, "sort", "", "Тип сортировки по размеру (desc/asc)")
 	flag.Parse()
 
-	if rootPath == "" {
-		return "", fmt.Errorf("флаг root не задан")
+	if rootPath == "" || sort == "" {
+		flag.Usage()
+		return "", "", fmt.Errorf("неуказан путь до корневой директории или тип сортировки")
 	}
-	if rootPath == "" {
-		return "", fmt.Errorf("флаг root не задан")
+	if sort != SortDesc && sort != SortAsc {
+		return "", "", fmt.Errorf("неверное значение флага sort [sort=%s]", sort)
 	}
 
-	return rootPath, nil
+	return rootPath, sort, nil
 }
 
 func getRootInfo(rootPath string) ([]rootFileInfo, error) {
@@ -127,6 +138,25 @@ func calculateDirSize(dirPath string) (int64, error) {
 	}
 
 	return size, nil
+}
+
+func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
+	var cmp func(a, b rootFileInfo) int
+
+	if sortType == SortAsc {
+		cmp = func(a, b rootFileInfo) int {
+			return int(a.Size - b.Size)
+		}
+	} else if sortType == SortDesc {
+		cmp = func(a, b rootFileInfo) int {
+			return int(b.Size - a.Size)
+		}
+	} else {
+		return fmt.Errorf("неизвестный тип сортировки [sortType=%s]", sortType)
+	}
+
+	slices.SortFunc(rootInfos, cmp)
+	return nil
 }
 
 func printTableRootInfo(rootInfos []rootFileInfo) {

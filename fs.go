@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sync"
 )
 
 type rootFileInfo struct {
@@ -75,18 +76,30 @@ func getRootInfo(rootPath string) ([]rootFileInfo, error) {
 }
 
 func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo {
-	var filesInfo []rootFileInfo
+	filesInfo := make([]rootFileInfo, len(dirEntries))
+	var wg sync.WaitGroup
+	wg.Add(len(dirEntries))
 
-	for _, dirEntry := range dirEntries {
-		dirPath := filepath.Join(rootPath, dirEntry.Name())
-		fileInfo, err := getRootFileInfo(dirPath, dirEntry)
-		if err != nil {
-			fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %ss", dirEntry, err)
-			continue
-		}
-		filesInfo = append(filesInfo, fileInfo)
+	for i, dirEntry := range dirEntries {
+		go func(rootPath string, i int, dirEntry os.DirEntry) {
+			defer wg.Done()
+
+			dirPath := filepath.Join(rootPath, dirEntry.Name())
+			fileInfo, err := getRootFileInfo(dirPath, dirEntry)
+			if err != nil {
+				fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %ss", dirEntry, err)
+				filesInfo[i] = rootFileInfo{
+					IsDir: dirEntry.IsDir(),
+					Name:  dirEntry.Name(),
+					Size:  0,
+				}
+				return
+			}
+			filesInfo[i] = fileInfo
+		}(rootPath, i, dirEntry)
 	}
 
+	wg.Wait()
 	return filesInfo
 }
 

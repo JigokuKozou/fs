@@ -184,7 +184,6 @@ func printTableRootInfo(rootInfos []rootFileInfo) {
 
 	template := fmt.Sprintf("%%-s\t%%-%ds\t%%%ds\n", maxNameLen, maxSizeLen)
 
-	fmt.Println(template)
 	fmt.Printf(template, columnType, columnName, columnSize)
 	for _, rootInfo := range rootInfos {
 		typeName := TypeFile

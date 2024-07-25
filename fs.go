@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -122,12 +120,9 @@ func calculateDirSize(dirPath string) (int64, error) {
 	var size int64
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("неудалось получить информацию о файле [dirPath=%s]: %s\n", dirPath, err)
-			if errors.Is(err, fs.ErrPermission) || errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
+			log.Printf("неудалось получить информацию о файле [dirPath=%s]: %s\n", path, err)
 
-			return fmt.Errorf("неудалось получить информацию о файле [dirPath=%s]: %w", dirPath, err)
+			return nil
 		}
 
 		size += info.Size()

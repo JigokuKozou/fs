@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,6 +17,12 @@ type rootFileInfo struct {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Fatalln("Произошла непредвиденная ошибка:", r)
+		}
+	}()
+
 	rootPath, err := parseFlag()
 	if err != nil {
 		log.Fatalln(err)
@@ -30,9 +38,14 @@ func main() {
 
 func parseFlag() (string, error) {
 	var rootPath string
+	var sortType string
 	flag.StringVar(&rootPath, "root", "", "Путь до корневой директории")
+	flag.StringVar(&sortType, "sort", "", "Путь до корневой директории")
 	flag.Parse()
 
+	if rootPath == "" {
+		return "", fmt.Errorf("флаг root не задан")
+	}
 	if rootPath == "" {
 		return "", fmt.Errorf("флаг root не задан")
 	}
@@ -97,16 +110,80 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 func calculateDirSize(dirPath string) (int64, error) {
 	var size int64
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Printf("неудалось получить информацию о файле [dirPath=%s]: %s\n", dirPath, err)
+			if errors.Is(err, fs.ErrPermission) || errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+
+			return fmt.Errorf("неудалось получить информацию о файле [dirPath=%s]: %w", dirPath, err)
+		}
+
 		size += info.Size()
 		return nil
 	})
 	if err != nil {
-		return 0, err // TODO fmt err
+		return 0, fmt.Errorf("неудалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 	}
 
 	return size, nil
 }
 
-func printTableRootInfo(rootInfo []rootFileInfo) {
-	fmt.Println(rootInfo)
+func printTableRootInfo(rootInfos []rootFileInfo) {
+	const (
+		columnType = "Тип"
+		columnName = "Имя"
+		columnSize = "Размер"
+	)
+
+	const (
+		TypeFile = "Файл"
+		TypeDir  = "Дир"
+	)
+
+	maxNameLen := len(columnName)
+	maxSizeLen := len(columnSize)
+	for _, rootInfo := range rootInfos {
+		if len(rootInfo.Name) > maxNameLen {
+			maxNameLen = len(rootInfo.Name)
+		}
+		if len(getForamttedSize(rootInfo.Size)) > maxSizeLen {
+			maxSizeLen = len(getForamttedSize(rootInfo.Size))
+		}
+	}
+
+	template := fmt.Sprintf("%%-s\t%%-%ds\t%%%ds\n", maxNameLen, maxSizeLen)
+
+	fmt.Println(template)
+	fmt.Printf(template, columnType, columnName, columnSize)
+	for _, rootInfo := range rootInfos {
+		typeName := TypeFile
+		if rootInfo.IsDir {
+			typeName = TypeDir
+		}
+
+		fmt.Printf(template, typeName, rootInfo.Name, getForamttedSize(rootInfo.Size))
+	}
+}
+
+func getForamttedSize(bytes int64) string {
+	const kiloByte = 1000
+	const megaByte = 1000 * kiloByte
+	const gigaByte = 1000 * megaByte
+	const teraByte = 1000 * gigaByte
+
+	if bytes > teraByte {
+		return fmt.Sprintf("%dTb", bytes/teraByte)
+	}
+	if bytes > gigaByte {
+		return fmt.Sprintf("%dGb", bytes/gigaByte)
+	}
+	if bytes > megaByte {
+		return fmt.Sprintf("%dMb", bytes/megaByte)
+	}
+	if bytes > kiloByte {
+		return fmt.Sprintf("%dKb", bytes/kiloByte)
+	}
+
+	return fmt.Sprintf("%d", bytes)
 }

@@ -191,10 +191,11 @@ func printTableRootInfo(rootInfos []rootFileInfo) {
 }
 
 func getForamttedSize(bytes int64) string {
-	const kiloByte = 1000
-	const megaByte = 1000 * kiloByte
-	const gigaByte = 1000 * megaByte
-	const teraByte = 1000 * gigaByte
+	const base = 1000
+	const kiloByte = base
+	const megaByte = base * kiloByte
+	const gigaByte = base * megaByte
+	const teraByte = base * gigaByte
 
 	if bytes > teraByte {
 		return fmt.Sprintf("%dTb", bytes/teraByte)
@@ -209,5 +210,5 @@ func getForamttedSize(bytes int64) string {
 		return fmt.Sprintf("%dKb", bytes/kiloByte)
 	}
 
-	return fmt.Sprintf("%d", bytes)
+	return fmt.Sprintf("%db", bytes)
 }

@@ -86,7 +86,7 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo 
 		dirPath := filepath.Join(rootPath, dirEntry.Name())
 		fileInfo, err := getRootFileInfo(dirPath, dirEntry)
 		if err != nil {
-			fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %ss", dirEntry, err)
+			fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %s", dirEntry, err)
 			continue
 		}
 		filesInfo = append(filesInfo, fileInfo)
@@ -108,9 +108,13 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 	}
 
 	if fileInfo.IsDir {
+		const defaultDirSize = 4000
 		size, err := calculateDirSize(dirPath)
 		if err != nil {
 			return rootFileInfo{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+		}
+		if size == 0 {
+			size = defaultDirSize
 		}
 
 		fileInfo.Size = size

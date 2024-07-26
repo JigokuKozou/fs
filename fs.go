@@ -31,6 +31,14 @@ type RootFileInfoResult struct {
 	RootFiles     []RootFileInfoResponse `json:"root_files"`     // Информация о файлах директории
 }
 
+type ErrUnknownSortType struct {
+	invalidSortTypeValue string
+}
+
+func (e ErrUnknownSortType) Error() string {
+	return fmt.Sprintf("не известный тип сортировки [sortType=%s]", e.invalidSortTypeValue)
+}
+
 const (
 	SortDesc = "desc"
 	SortAsc  = "asc"
@@ -168,7 +176,7 @@ func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 			return int(b.Size - a.Size)
 		}
 	default:
-		return fmt.Errorf("не известный тип сортировки [sortType=%s]", sortType)
+		return ErrUnknownSortType{invalidSortTypeValue: sortType}
 	}
 
 	slices.SortFunc(rootInfos, cmp)

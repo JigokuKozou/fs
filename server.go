@@ -119,6 +119,11 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
+		if err, ok := err.(ErrUnknownSortType); ok {
+			http.Error(w, "неверный тип сортировки", http.StatusBadRequest)
+			log.Println(err)
+			return
+		}
 
 		http.Error(w, "Внутреняя ошибка сервера", http.StatusInternalServerError)
 		log.Println(err)

@@ -42,6 +42,7 @@ func main() {
 
 	http.HandleFunc("/fs", fsHandler)
 
+	fmt.Printf("Запуск сервера на http://localhost:%s ...\n", config.ServerPort)
 	err = server.ListenAndServe()
 	if err != nil || errors.Is(err, http.ErrServerClosed) {
 		log.Fatalln(err)
@@ -125,14 +126,14 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Error(w, "Внутреняя ошибка сервера", http.StatusInternalServerError)
+		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(*rootInfo)
 	if err != nil {
-		http.Error(w, "Внутреняя ошибка сервера", 500)
+		http.Error(w, "Внутренняя ошибка сервера", 500)
 		log.Println(err)
 		return
 	}
@@ -151,7 +152,8 @@ func getRequestParams(r *http.Request) (string, string, error) {
 	sortType := requestUrlValues.Get("sort")
 
 	if rootPath == "" || sortType == "" {
-		err := fmt.Errorf("переданы пустые параметры сортировки (поле и/или порядок)")
+		err := fmt.Errorf("передан пустой параметр пути и/или сортировки [root=%s, sort=%s]",
+			rootPath, sortType)
 		return "", "", err
 	}
 	return rootPath, sortType, nil

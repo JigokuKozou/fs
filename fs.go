@@ -17,14 +17,17 @@ type rootFileInfo struct {
 	Size  int64  // Размер в байтах
 }
 
+// RootFileInfoResponse - форматированое для пользователя представление rootFileInfo
 type RootFileInfoResponse struct {
 	Type string `json:"type"` // Тип сущности (Файл/Дир)
 	Name string `json:"name"` // Имя
 	Size string `json:"size"` // Форматированный размер
 }
 
-type RootInfoResult struct {
-	ExecutionTime float64                `json:"execution_time"` // Время выполнения программы
+// RootFileInfoResult - представляет собой структуру, содержащую информацию о файлах в корневом каталоге
+// и время выполнения операции.
+type RootFileInfoResult struct {
+	ExecutionTime float64                `json:"execution_time"` // Время выполнения операции
 	RootFiles     []RootFileInfoResponse `json:"root_files"`     // Информация о файлах директории
 }
 
@@ -35,13 +38,10 @@ const (
 
 const DefaultDirSize = 4000
 
-func GetSortedRootInfo(rootPath string, sortType string) (*RootInfoResult, error) {
+// GetSortedRootInfo получает информацию о файлах в указанном rootPath,
+// сортирует их по заданному sortType и возвращает отсортированную информацию и время выполнения.
+func GetSortedRootInfo(rootPath string, sortType string) (*RootFileInfoResult, error) {
 	start := time.Now()
-
-	err := validate(sortType)
-	if err != nil {
-		return nil, err
-	}
 
 	rootInfos, err := getRootInfo(rootPath)
 	if err != nil {
@@ -55,20 +55,10 @@ func GetSortedRootInfo(rootPath string, sortType string) (*RootInfoResult, error
 	end := time.Since(start).Seconds()
 	log.Printf("Время выполнения %.2f сек", end)
 
-	return &RootInfoResult{
+	return &RootFileInfoResult{
 		ExecutionTime: end,
 		RootFiles:     getRootInfoJson(rootInfos),
 	}, nil
-}
-
-// validate - проверяет на корректность значение sortType
-func validate(sortType string) error {
-	// Проверяем, имеет ли флаг sort допустимое значение
-	if sortType != SortDesc && sortType != SortAsc {
-		return fmt.Errorf("неверное значение sort [sortType=%s]", sortType)
-	}
-
-	return nil
 }
 
 // getRootInfo - получает информацию о файлах и директориях в корневой директории.
@@ -185,7 +175,7 @@ func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 	return nil
 }
 
-// getRootInfoJson - выводит информацию о корневых файлах в табличном формате.
+// getRootInfoJson - возвращает слайс структур для вывода пользователю
 func getRootInfoJson(rootInfos []rootFileInfo) []RootFileInfoResponse {
 	const (
 		TypeFile = "Файл"

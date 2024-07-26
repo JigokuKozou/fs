@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// Config - конфигурация приложения
+// Config - конфигурация приложения.
 type Config struct {
 	ServerPort string // Порт сервера
 }
@@ -26,7 +26,7 @@ func init() {
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Fatalln("произошла непредвиденная ошибка:", r)
+			log.Fatalln("Произошла непредвиденная ошибка:", r)
 		}
 	}()
 
@@ -48,7 +48,7 @@ func main() {
 	}
 }
 
-// LoadEnvironmentVar загружает переменные окружения из файла .env
+// LoadEnvironmentVar загружает переменные окружения из файла ".env".
 func LoadEnvironmentVar() error {
 	file, err := os.Open(".env")
 	if err != nil {
@@ -82,13 +82,16 @@ func LoadEnvironmentVar() error {
 	return nil
 }
 
+// getConfig - возвращает конфигурацию приложения,
+// считывая значения из переменных окружения системы.
 func getConfig() (Config, error) {
 	const (
 		httpServerPort = "HTTP_SERVER_PORT"
 	)
 	port, ok := os.LookupEnv(httpServerPort)
 	if !ok {
-		return Config{}, fmt.Errorf("переменная окружения %s не задана", httpServerPort)
+		return Config{}, fmt.Errorf("переменная окружения %s не задана",
+			httpServerPort)
 	}
 
 	return Config{
@@ -96,6 +99,7 @@ func getConfig() (Config, error) {
 	}, nil
 }
 
+// fsHandler обрабатывает HTTP-запросы для получения информации о содержимом директории.
 func fsHandler(w http.ResponseWriter, r *http.Request) {
 	rootPath, sortType, err := getRequestParams(r)
 	if err != nil {
@@ -104,7 +108,6 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rootInfo, err := GetSortedRootInfo(rootPath, sortType)
-
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "директория не существует", http.StatusNotFound)
@@ -129,10 +132,14 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Устанавливаем заголовок ответа, указывая, что содержимое будет в формате JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
 }
 
+// getRequestParams извлекает параметры "root" и "sort" из URL запроса.
+// Если один из параметров отсутствует, возвращается ошибка с соответствующим сообщением.
+// Возвращает значения параметров "root" и "sort", а также ошибку, если она возникла.
 func getRequestParams(r *http.Request) (string, string, error) {
 	requestUrlValues := r.URL.Query()
 	rootPath := requestUrlValues.Get("root")

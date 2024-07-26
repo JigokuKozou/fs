@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -18,6 +17,17 @@ type rootFileInfo struct {
 	Size  int64  // Размер в байтах
 }
 
+type RootFileInfoResponse struct {
+	Type string `json:"type"` // Тип сущности (Файл/Дир)
+	Name string `json:"name"` // Имя
+	Size string `json:"size"` // Форматированный размер
+}
+
+type RootInfoResult struct {
+	ExecutionTime float64                `json:"execution_time"` // Время выполнения программы
+	RootFiles     []RootFileInfoResponse `json:"root_files"`     // Информация о файлах директории
+}
+
 const (
 	SortDesc = "desc"
 	SortAsc  = "asc"
@@ -25,56 +35,40 @@ const (
 
 const DefaultDirSize = 4000
 
-func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatalln("Произошла непредвиденная ошибка:", r)
-		}
-	}()
-
+func GetSortedRootInfo(rootPath string, sortType string) (*RootInfoResult, error) {
 	start := time.Now()
 
-	rootPath, sortType, err := parseFlag()
+	err := validate(sortType)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	rootInfos, err := getRootInfo(rootPath)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	if err := sortRootInfos(rootInfos, sortType); err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
-	printTableRootInfo(rootInfos)
+	end := time.Since(start).Seconds()
+	log.Printf("Время выполнения %.2f сек", end)
 
-	log.Printf("Время выполнения %.2f сек", time.Since(start).Seconds())
+	return &RootInfoResult{
+		ExecutionTime: end,
+		RootFiles:     getRootInfoJson(rootInfos),
+	}, nil
 }
 
-// parseFlag - парсит флаги командной строки и возвращает путь до корневой директории и тип сортировки.
-// Если флаги не указаны или имеют неверные значения, возвращается ошибка.
-func parseFlag() (string, string, error) {
-	var rootPath string
-	var sort string
-	flag.StringVar(&rootPath, "root", "", "Путь до корневой директории")
-	flag.StringVar(&sort, "sort", "", "Тип сортировки по размеру (desc/asc)")
-	flag.Parse()
-
-	// Проверяем, указаны ли оба флага
-	if rootPath == "" || sort == "" {
-		flag.Usage()
-		return "", "", fmt.Errorf("не указан путь до корневой директории или тип сортировки [rootPath=%s, sort=%s]",
-			rootPath, sort)
-	}
-
+// validate - проверяет на корректность значение sortType
+func validate(sortType string) error {
 	// Проверяем, имеет ли флаг sort допустимое значение
-	if sort != SortDesc && sort != SortAsc {
-		return "", "", fmt.Errorf("неверное значение флага sort [sort=%s]", sort)
+	if sortType != SortDesc && sortType != SortAsc {
+		return fmt.Errorf("неверное значение sort [sortType=%s]", sortType)
 	}
 
-	return rootPath, sort, nil
+	return nil
 }
 
 // getRootInfo - получает информацию о файлах и директориях в корневой директории.
@@ -191,34 +185,15 @@ func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 	return nil
 }
 
-// printTableRootInfo - выводит информацию о корневых файлах в табличном формате.
-func printTableRootInfo(rootInfos []rootFileInfo) {
-	const (
-		columnType = "Тип"
-		columnName = "Имя"
-		columnSize = "Размер"
-	)
-
+// getRootInfoJson - выводит информацию о корневых файлах в табличном формате.
+func getRootInfoJson(rootInfos []rootFileInfo) []RootFileInfoResponse {
 	const (
 		TypeFile = "Файл"
 		TypeDir  = "Дир"
 	)
 
-	maxNameLen := len(columnName)
-	maxSizeLen := len(columnSize)
-	for _, rootInfo := range rootInfos {
-		if len(rootInfo.Name) > maxNameLen {
-			maxNameLen = len(rootInfo.Name)
-		}
-		if len(getForamttedSize(rootInfo.Size)) > maxSizeLen {
-			maxSizeLen = len(getForamttedSize(rootInfo.Size))
-		}
-	}
-
-	template := fmt.Sprintf("%%-s\t%%-%ds\t%%%ds\n", maxNameLen, maxSizeLen)
-
-	fmt.Printf(template, columnType, columnName, columnSize)
-	for _, rootInfo := range rootInfos {
+	rootFileInfoResponse := make([]RootFileInfoResponse, len(rootInfos))
+	for index, rootInfo := range rootInfos {
 		var typeName string
 		if rootInfo.IsDir {
 			typeName = TypeDir
@@ -226,8 +201,14 @@ func printTableRootInfo(rootInfos []rootFileInfo) {
 			typeName = TypeFile
 		}
 
-		fmt.Printf(template, typeName, rootInfo.Name, getForamttedSize(rootInfo.Size))
+		rootFileInfoResponse[index] = RootFileInfoResponse{
+			Type: typeName,
+			Name: rootInfo.Name,
+			Size: getForamttedSize(rootInfo.Size),
+		}
 	}
+
+	return rootFileInfoResponse
 }
 
 // getForamttedSize - принимает размер в байтах и возвращает строку, представляющую этот размер
@@ -241,17 +222,17 @@ func getForamttedSize(bytes int64) string {
 	const teraByte = base * gigaByte
 
 	if bytes > teraByte {
-		return fmt.Sprintf("%dTb", bytes/teraByte)
+		return fmt.Sprintf("%d Tb", bytes/teraByte)
 	}
 	if bytes > gigaByte {
-		return fmt.Sprintf("%dGb", bytes/gigaByte)
+		return fmt.Sprintf("%d Gb", bytes/gigaByte)
 	}
 	if bytes > megaByte {
-		return fmt.Sprintf("%dMb", bytes/megaByte)
+		return fmt.Sprintf("%d Mb", bytes/megaByte)
 	}
 	if bytes > kiloByte {
-		return fmt.Sprintf("%dKb", bytes/kiloByte)
+		return fmt.Sprintf("%d Kb", bytes/kiloByte)
 	}
 
-	return fmt.Sprintf("%db", bytes)
+	return fmt.Sprintf("%d b", bytes)
 }

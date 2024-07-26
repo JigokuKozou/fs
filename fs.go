@@ -96,7 +96,7 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo 
 	wg.Add(len(dirEntries))
 
 	for indexDir, dirEntry := range dirEntries {
-		go func(rootPath string, i int, dirEntry os.DirEntry) {
+		go func(rootPath string, i int, dirEntry os.DirEntry, filesInfo []rootFileInfo, wg *sync.WaitGroup) {
 			defer wg.Done()
 
 			dirPath := filepath.Join(rootPath, dirEntry.Name())
@@ -113,7 +113,7 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo 
 				}
 			}
 			filesInfo[i] = fileInfo
-		}(rootPath, indexDir, dirEntry)
+		}(rootPath, indexDir, dirEntry, filesInfo, &wg)
 	}
 
 	wg.Wait()

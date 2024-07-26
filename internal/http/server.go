@@ -1,36 +1,19 @@
-package main
+package http
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strings"
+
+	"github.com/JigokuKozou/fs/internal/config"
+	fs "github.com/JigokuKozou/fs/internal/filesystem"
 )
 
-// Config - конфигурация приложения.
-type Config struct {
-	ServerPort string // Порт сервера
-}
-
-func init() {
-	// загружаем переменные .env в систему
-	if err := LoadEnvironmentVar(); err != nil {
-		log.Print("Файл .env не найден")
-	}
-}
-
-func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatalln("Произошла непредвиденная ошибка:", r)
-		}
-	}()
-
-	config, err := getConfig()
+func Run() {
+	config, err := config.GetConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -49,57 +32,6 @@ func main() {
 	}
 }
 
-// LoadEnvironmentVar загружает переменные окружения из файла ".env".
-func LoadEnvironmentVar() error {
-	file, err := os.Open(".env")
-	if err != nil {
-		return fmt.Errorf("ошибка открытия файла .env: %w", err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		// Пропуск пустых строк или коментариев
-		if len(line) == 0 || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		// Получения ключа и значения
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			return fmt.Errorf("неверный формат строки в .env файле: %s", line)
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-		os.Setenv(key, value)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("ошибка чтения файла .env: %v", err)
-	}
-
-	return nil
-}
-
-// getConfig - возвращает конфигурацию приложения,
-// считывая значения из переменных окружения системы.
-func getConfig() (Config, error) {
-	const (
-		httpServerPort = "HTTP_SERVER_PORT"
-	)
-	port, ok := os.LookupEnv(httpServerPort)
-	if !ok {
-		return Config{}, fmt.Errorf("переменная окружения %s не задана",
-			httpServerPort)
-	}
-
-	return Config{
-		ServerPort: port,
-	}, nil
-}
-
 // fsHandler обрабатывает HTTP-запросы для получения информации о содержимом директории.
 func fsHandler(w http.ResponseWriter, r *http.Request) {
 	rootPath, sortType, err := getRequestParams(r)
@@ -108,7 +40,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootInfo, err := GetSortedRootInfo(rootPath, sortType)
+	rootInfo, err := fs.GetSortedRootInfo(rootPath, sortType)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "директория не существует", http.StatusNotFound)
@@ -120,7 +52,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
-		if err, ok := err.(ErrUnknownSortType); ok {
+		if err, ok := err.(fs.ErrUnknownSortType); ok {
 			http.Error(w, "неверный тип сортировки", http.StatusBadRequest)
 			log.Println(err)
 			return

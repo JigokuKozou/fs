@@ -23,6 +23,8 @@ const (
 	SortAsc  = "asc"
 )
 
+const DefaultDirSize = 4000
+
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -93,7 +95,7 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo 
 	var wg sync.WaitGroup
 	wg.Add(len(dirEntries))
 
-	for i, dirEntry := range dirEntries {
+	for indexDir, dirEntry := range dirEntries {
 		go func(rootPath string, i int, dirEntry os.DirEntry) {
 			defer wg.Done()
 
@@ -101,15 +103,17 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo 
 			fileInfo, err := getRootFileInfo(dirPath, dirEntry)
 			if err != nil {
 				fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %ss", dirEntry, err)
-				filesInfo[i] = rootFileInfo{
+				fileInfo = rootFileInfo{
 					IsDir: dirEntry.IsDir(),
 					Name:  dirEntry.Name(),
 					Size:  0,
 				}
-				return
+				if fileInfo.IsDir {
+					fileInfo.Size = DefaultDirSize
+				}
 			}
 			filesInfo[i] = fileInfo
-		}(rootPath, i, dirEntry)
+		}(rootPath, indexDir, dirEntry)
 	}
 
 	wg.Wait()
@@ -130,13 +134,12 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 	}
 
 	if fileInfo.IsDir {
-		const defaultDirSize = 4000
 		size, err := calculateDirSize(dirPath)
 		if err != nil {
 			return rootFileInfo{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 		}
 		if size == 0 {
-			size = defaultDirSize
+			size = DefaultDirSize
 		}
 
 		fileInfo.Size = size

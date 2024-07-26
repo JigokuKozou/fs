@@ -189,9 +189,11 @@ func printTableRootInfo(rootInfos []rootFileInfo) {
 
 	fmt.Printf(template, columnType, columnName, columnSize)
 	for _, rootInfo := range rootInfos {
-		typeName := TypeFile
+		var typeName string
 		if rootInfo.IsDir {
 			typeName = TypeDir
+		} else {
+			typeName = TypeFile
 		}
 
 		fmt.Printf(template, typeName, rootInfo.Name, getForamttedSize(rootInfo.Size))

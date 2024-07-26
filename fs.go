@@ -11,10 +11,11 @@ import (
 	"time"
 )
 
+// rootFileInfo - представление сущностей(файлов/директорий) корневой директории
 type rootFileInfo struct {
-	IsDir bool
-	Name  string
-	Size  int64
+	IsDir bool   // Является ли директорией
+	Name  string // Имя
+	Size  int64  // Размер в байтах
 }
 
 const (
@@ -50,6 +51,8 @@ func main() {
 	log.Printf("Время выполнения %.2f сек", time.Since(start).Seconds())
 }
 
+// parseFlag - парсит флаги командной строки и возвращает путь до корневой директории и тип сортировки.
+// Если флаги не указаны или имеют неверные значения, возвращается ошибка.
 func parseFlag() (string, string, error) {
 	var rootPath string
 	var sort string
@@ -57,11 +60,14 @@ func parseFlag() (string, string, error) {
 	flag.StringVar(&sort, "sort", "", "Тип сортировки по размеру (desc/asc)")
 	flag.Parse()
 
+	// Проверяем, указаны ли оба флага
 	if rootPath == "" || sort == "" {
 		flag.Usage()
 		return "", "", fmt.Errorf("не указан путь до корневой директории или тип сортировки [rootPath=%s, sort=%s]",
 			rootPath, sort)
 	}
+
+	// Проверяем, имеет ли флаг sort допустимое значение
 	if sort != SortDesc && sort != SortAsc {
 		return "", "", fmt.Errorf("неверное значение флага sort [sort=%s]", sort)
 	}
@@ -69,6 +75,7 @@ func parseFlag() (string, string, error) {
 	return rootPath, sort, nil
 }
 
+// getRootInfo - получает информацию о файлах и директориях в корневой директории.
 func getRootInfo(rootPath string) ([]rootFileInfo, error) {
 	rootEntries, err := os.ReadDir(rootPath)
 	if err != nil {
@@ -80,6 +87,7 @@ func getRootInfo(rootPath string) ([]rootFileInfo, error) {
 	return rootInfo, nil
 }
 
+// getRootFilesInfo - получает информацию о файлах и директориях из списка os.DirEntry.
 func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo {
 	filesInfo := make([]rootFileInfo, len(dirEntries))
 	var wg sync.WaitGroup
@@ -108,6 +116,7 @@ func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo 
 	return filesInfo
 }
 
+// getRootFileInfo - получает информацию о конкретном файле или директории.
 func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error) {
 	info, err := dirEntry.Info()
 	if err != nil {
@@ -121,9 +130,13 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 	}
 
 	if fileInfo.IsDir {
+		const defaultDirSize = 4000
 		size, err := calculateDirSize(dirPath)
 		if err != nil {
 			return rootFileInfo{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+		}
+		if size == 0 {
+			size = defaultDirSize
 		}
 
 		fileInfo.Size = size
@@ -132,6 +145,7 @@ func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error)
 	return fileInfo, nil
 }
 
+// calculateDirSize - вычисляет размер директории, рекурсивно проходя по всем её файлам и поддиректориям.
 func calculateDirSize(dirPath string) (int64, error) {
 	var size int64
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
@@ -151,6 +165,9 @@ func calculateDirSize(dirPath string) (int64, error) {
 	return size, nil
 }
 
+// sortRootInfos - сортирует срез rootFileInfo в зависимости от типа сортировки sortType.
+// Параметр sortType - строка, определяющая тип сортировки ("asc" для сортировки по возрастанию, "desc" для сортировки по убыванию).
+// Возвращает ошибку, если тип сортировки не распознан.
 func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 	var cmp func(a, b rootFileInfo) int
 
@@ -171,6 +188,7 @@ func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 	return nil
 }
 
+// printTableRootInfo - выводит информацию о корневых файлах в табличном формате.
 func printTableRootInfo(rootInfos []rootFileInfo) {
 	const (
 		columnType = "Тип"
@@ -198,15 +216,20 @@ func printTableRootInfo(rootInfos []rootFileInfo) {
 
 	fmt.Printf(template, columnType, columnName, columnSize)
 	for _, rootInfo := range rootInfos {
-		typeName := TypeFile
+		var typeName string
 		if rootInfo.IsDir {
 			typeName = TypeDir
+		} else {
+			typeName = TypeFile
 		}
 
 		fmt.Printf(template, typeName, rootInfo.Name, getForamttedSize(rootInfo.Size))
 	}
 }
 
+// getForamttedSize - принимает размер в байтах и возвращает строку, представляющую этот размер
+// в удобочитаемом формате (байты, килобайты, мегабайты, гигабайты или терабайты).
+// Например, 1500 байт будет преобразовано в "1Kb".
 func getForamttedSize(bytes int64) string {
 	const base = 1000
 	const kiloByte = base

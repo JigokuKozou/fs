@@ -12,6 +12,7 @@ import (
 	fs "github.com/JigokuKozou/fs/internal/filesystem"
 )
 
+// Run запускает HTTP-сервер.
 func Run() {
 	config, err := config.GetConfig()
 	if err != nil {

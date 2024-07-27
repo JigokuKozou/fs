@@ -10,147 +10,118 @@ import (
 	"time"
 )
 
-// rootFileInfo - представление сущностей(файлов/директорий) корневой директории
-type rootFileInfo struct {
-	IsDir bool   // Является ли директорией
-	Name  string // Имя
-	Size  int64  // Размер в байтах
+// NewDirEntity создает новый DirEntity с указанными свойствами.
+func NewDirEntity(isDir bool, name string, size int64) DirEntity {
+	var typeName string
+	if isDir {
+		typeName = TypeDir
+	} else {
+		typeName = TypeFile
+	}
+
+	return DirEntity{
+		isDir:         isDir,
+		Type:          typeName,
+		Name:          name,
+		size:          size,
+		FormattedSize: FormattedSize(size),
+	}
 }
 
-// RootFileInfoResponse - форматированое для пользователя представление rootFileInfo
-type RootFileInfoResponse struct {
-	Type string `json:"type"` // Тип сущности (Файл/Дир)
-	Name string `json:"name"` // Имя
-	Size string `json:"size"` // Форматированный размер
-}
-
-// RootFileInfoResult - представляет собой структуру, содержащую информацию о файлах в корневом каталоге
-// и время выполнения операции.
-type RootFileInfoResult struct {
-	ExecutionTime float64                `json:"execution_time"` // Время выполнения операции
-	RootFiles     []RootFileInfoResponse `json:"root_files"`     // Информация о файлах директории
-}
-
-type ErrUnknownSortType struct {
-	invalidSortTypeValue string
-}
-
-func (e ErrUnknownSortType) Error() string {
-	return fmt.Sprintf("не известный тип сортировки [sortType=%s]", e.invalidSortTypeValue)
-}
-
-const (
-	SortDesc = "desc"
-	SortAsc  = "asc"
-)
-
-const DefaultDirSize = 4000
-
-// GetSortedRootInfo получает информацию о файлах в указанном rootPath,
-// сортирует их по заданному sortType и возвращает отсортированную информацию и время выполнения.
-func GetSortedRootInfo(rootPath string, sortType string) (*RootFileInfoResult, error) {
+// SortedDirEntities получает информацию о сущностях в директории по пути rootPath,
+// сортирует их по заданному sortType и возвращает отсортированную информацию.
+func SortedDirEntities(rootPath string, sortType string) ([]DirEntity, error) {
 	start := time.Now()
 
-	rootInfos, err := getRootInfo(rootPath)
+	dirEntities, err := RootDirEntities(rootPath)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := sortRootInfos(rootInfos, sortType); err != nil {
+	if err := SortDirEntities(dirEntities, sortType); err != nil {
 		return nil, err
 	}
 
 	end := time.Since(start).Seconds()
 	log.Printf("Время выполнения %.2f сек", end)
 
-	return &RootFileInfoResult{
-		ExecutionTime: end,
-		RootFiles:     getRootInfoJson(rootInfos),
-	}, nil
+	return dirEntities, nil
 }
 
-// getRootInfo - получает информацию о файлах и директориях в корневой директории.
-func getRootInfo(rootPath string) ([]rootFileInfo, error) {
+// RootDirEntities - получает информацию о файлах и директориях в корневой директории.
+func RootDirEntities(rootPath string) ([]DirEntity, error) {
 	rootEntries, err := os.ReadDir(rootPath)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка чтения корневой директории [rootPath=%s]: %w", rootPath, err)
 	}
 
-	rootInfo := getRootFilesInfo(rootPath, rootEntries)
-
-	return rootInfo, nil
-}
-
-// getRootFilesInfo - получает информацию о файлах и директориях из списка os.DirEntry.
-func getRootFilesInfo(rootPath string, dirEntries []os.DirEntry) []rootFileInfo {
-	filesInfo := make([]rootFileInfo, len(dirEntries))
+	rootDirEntities := make([]DirEntity, len(rootEntries))
 	var wg sync.WaitGroup
-	wg.Add(len(dirEntries))
+	wg.Add(len(rootEntries))
 
-	for indexDir, dirEntry := range dirEntries {
+	for indexDir, dirEntry := range rootEntries {
 		go func(rootPath string, i int, dirEntry os.DirEntry) {
 			defer wg.Done()
 
 			dirPath := filepath.Join(rootPath, dirEntry.Name())
-			fileInfo, err := getRootFileInfo(dirPath, dirEntry)
+			dirEntity, err := mapToDirEntity(dirPath, dirEntry)
 			if err != nil {
-				fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %ss", dirEntry, err)
-				fileInfo = rootFileInfo{
-					IsDir: dirEntry.IsDir(),
-					Name:  dirEntry.Name(),
-					Size:  0,
-				}
-				if fileInfo.IsDir {
-					fileInfo.Size = DefaultDirSize
+				fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %s", dirEntry, err)
+
+				dirEntity = NewDirEntity(dirEntry.IsDir(), dirEntry.Name(), 0)
+				if dirEntity.isDir {
+					dirEntity.SetSize(DefaultDirSize)
 				}
 			}
-			filesInfo[i] = fileInfo
+			rootDirEntities[i] = dirEntity
 		}(rootPath, indexDir, dirEntry)
 	}
 
 	wg.Wait()
-	return filesInfo
+
+	return rootDirEntities, nil
 }
 
-// getRootFileInfo - получает информацию о конкретном файле или директории.
-func getRootFileInfo(dirPath string, dirEntry os.DirEntry) (rootFileInfo, error) {
+// mapToDirEntity - получает информацию о конкретном файле или директории.
+func mapToDirEntity(dirPath string, dirEntry os.DirEntry) (DirEntity, error) {
 	info, err := dirEntry.Info()
 	if err != nil {
-		return rootFileInfo{}, fmt.Errorf("не удалось получить информацию о файле [dirEntry=%v]: %w", dirEntry, err)
+		return DirEntity{}, fmt.Errorf("не удалось получить информацию о файле [dirEntry=%v]: %w", dirEntry, err)
 	}
 
-	fileInfo := rootFileInfo{
-		IsDir: info.IsDir(),
-		Name:  info.Name(),
-		Size:  info.Size(),
-	}
+	dirEntity := NewDirEntity(info.IsDir(), info.Name(), info.Size())
 
-	if fileInfo.IsDir {
-		size, err := calculateDirSize(dirPath)
+	if dirEntity.isDir {
+		size, err := CalculateDirSize(dirPath)
 		if err != nil {
-			return rootFileInfo{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+			return DirEntity{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 		}
 		if size == 0 {
 			size = DefaultDirSize
 		}
 
-		fileInfo.Size = size
+		dirEntity.SetSize(size)
 	}
 
-	return fileInfo, nil
+	return dirEntity, nil
 }
 
-// calculateDirSize - вычисляет размер директории, рекурсивно проходя по всем её файлам и поддиректориям.
-func calculateDirSize(dirPath string) (int64, error) {
+// CalculateDirSize - вычисляет размер директории, рекурсивно проходя по всем её файлам и поддиректориям.
+func CalculateDirSize(dirPath string) (int64, error) {
 	var size int64
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("не удалось получить информацию о файле [dirPath=%s]: %s\n", path, err)
+			log.Printf("Не удалось получить информацию о файле [dirPath=%s]: %s\n", path, err)
 
 			return nil
 		}
 
-		size += info.Size()
+		if !info.IsDir() {
+			size += info.Size()
+		} else if path == dirPath {
+			// Прибавляем размер текущей директории к общему размеру
+			size += info.Size()
+		}
 		return nil
 	})
 	if err != nil {
@@ -160,20 +131,20 @@ func calculateDirSize(dirPath string) (int64, error) {
 	return size, nil
 }
 
-// sortRootInfos - сортирует срез rootFileInfo в зависимости от типа сортировки sortType.
+// SortDirEntities - сортирует срез rootFileInfo в зависимости от типа сортировки sortType.
 // Параметр sortType - строка, определяющая тип сортировки ("asc" для сортировки по возрастанию, "desc" для сортировки по убыванию).
 // Возвращает ошибку, если тип сортировки не распознан.
-func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
-	var cmp func(a, b rootFileInfo) int
+func SortDirEntities(rootInfos []DirEntity, sortType string) error {
+	var cmp func(a, b DirEntity) int
 
 	switch sortType {
 	case SortAsc:
-		cmp = func(a, b rootFileInfo) int {
-			return int(a.Size - b.Size)
+		cmp = func(a, b DirEntity) int {
+			return int(a.size - b.size)
 		}
 	case SortDesc:
-		cmp = func(a, b rootFileInfo) int {
-			return int(b.Size - a.Size)
+		cmp = func(a, b DirEntity) int {
+			return int(b.size - a.size)
 		}
 	default:
 		return ErrUnknownSortType{invalidSortTypeValue: sortType}
@@ -183,53 +154,21 @@ func sortRootInfos(rootInfos []rootFileInfo, sortType string) error {
 	return nil
 }
 
-// getRootInfoJson - возвращает слайс структур для вывода пользователю
-func getRootInfoJson(rootInfos []rootFileInfo) []RootFileInfoResponse {
-	const (
-		TypeFile = "Файл"
-		TypeDir  = "Дир"
-	)
-
-	rootFileInfoResponse := make([]RootFileInfoResponse, len(rootInfos))
-	for index, rootInfo := range rootInfos {
-		var typeName string
-		if rootInfo.IsDir {
-			typeName = TypeDir
-		} else {
-			typeName = TypeFile
-		}
-
-		rootFileInfoResponse[index] = RootFileInfoResponse{
-			Type: typeName,
-			Name: rootInfo.Name,
-			Size: getForamttedSize(rootInfo.Size),
-		}
-	}
-
-	return rootFileInfoResponse
-}
-
-// getForamttedSize - принимает размер в байтах и возвращает строку, представляющую этот размер
+// FormattedSize - принимает размер в байтах и возвращает строку, представляющую этот размер
 // в удобочитаемом формате (байты, килобайты, мегабайты, гигабайты или терабайты).
 // Например, 1500 байт будет преобразовано в "1Kb".
-func getForamttedSize(bytes int64) string {
-	const base = 1000
-	const kiloByte = base
-	const megaByte = base * kiloByte
-	const gigaByte = base * megaByte
-	const teraByte = base * gigaByte
-
+func FormattedSize(bytes int64) string {
 	if bytes > teraByte {
-		return fmt.Sprintf("%d Tb", bytes/teraByte)
+		return fmt.Sprintf("%.2f Tb", float64(bytes)/float64(teraByte))
 	}
 	if bytes > gigaByte {
-		return fmt.Sprintf("%d Gb", bytes/gigaByte)
+		return fmt.Sprintf("%.2f Gb", float64(bytes)/float64(gigaByte))
 	}
 	if bytes > megaByte {
-		return fmt.Sprintf("%d Mb", bytes/megaByte)
+		return fmt.Sprintf("%.2f Mb", float64(bytes)/float64(megaByte))
 	}
 	if bytes > kiloByte {
-		return fmt.Sprintf("%d Kb", bytes/kiloByte)
+		return fmt.Sprintf("%.2f Kb", float64(bytes)/float64(kiloByte))
 	}
 
 	return fmt.Sprintf("%d b", bytes)

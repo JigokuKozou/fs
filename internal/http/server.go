@@ -41,7 +41,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootInfo, err := fs.GetSortedRootInfo(rootPath, sortType)
+	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "директория не существует", http.StatusNotFound)
@@ -64,7 +64,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse, err := json.Marshal(*rootInfo)
+	jsonResponse, err := json.Marshal(rootDirEntities)
 	if err != nil {
 		http.Error(w, "Внутренняя ошибка сервера", 500)
 		log.Println(err)
@@ -74,6 +74,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 	// Устанавливаем заголовок ответа, указывая, что содержимое будет в формате JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
+	fmt.Println(rootDirEntities[0].Size())
 }
 
 // getRequestParams извлекает параметры "root" и "sort" из URL запроса.

@@ -104,7 +104,6 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 	// Устанавливаем заголовок ответа, указывая, что содержимое будет в формате JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
-	fmt.Println(rootDirEntities[0].Size())
 }
 
 // getRequestParams извлекает параметры "root" и "sort" из URL запроса.

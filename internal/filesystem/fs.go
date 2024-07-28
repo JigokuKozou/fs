@@ -57,6 +57,7 @@ func RootDirEntities(ctx context.Context, rootPath string) ([]DirEntity, error) 
 
 	rootDirEntities := make([]DirEntity, 0, len(rootEntries))
 	rootDirEntitiesChannel := make(chan DirEntity, len(rootEntries))
+	defer close(rootDirEntitiesChannel)
 
 	for _, dirEntry := range rootEntries {
 		go func(rootPath string, dirEntry os.DirEntry) {

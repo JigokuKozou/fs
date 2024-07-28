@@ -1,25 +1,40 @@
-package http
+package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/JigokuKozou/fs/internal/config"
 	fs "github.com/JigokuKozou/fs/internal/filesystem"
 )
 
+var Server *http.Server
+
+var ctx context.Context
+var operationCtx context.Context
+var cancelOperationCtx context.CancelFunc
+
 // Run запускает HTTP-сервер.
-func Run() {
+func Run(outerCtx context.Context) {
+	// Сохраняем внешний контекст
+	ctx = outerCtx
+
+	// Создаём контекст для отмены долгих операций
+	operationCtx, cancelOperationCtx = context.WithCancel(ctx)
+	defer cancelOperationCtx()
+
 	config, err := config.GetConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	server := &http.Server{
+	Server = &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.ServerPort),
 		Handler: http.DefaultServeMux,
 	}
@@ -27,10 +42,25 @@ func Run() {
 	http.HandleFunc("/fs", fsHandler)
 
 	fmt.Printf("Запуск сервера на http://localhost:%s ...\n", config.ServerPort)
-	err = server.ListenAndServe()
-	if err != nil || errors.Is(err, http.ErrServerClosed) {
+	if err = Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalln(err)
 	}
+}
+
+// Shutdown останавливает HTTP-сервер. Возвращает ошибку метода http.Server.Shutdown.
+func Shutdown(timeout time.Duration) error {
+	log.Println("Сервер останавливается...")
+
+	// Контекст для ожидания закрытия соединений
+	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, timeout)
+	defer timeoutCancel()
+
+	log.Println("Отмена долгих операций в открытых соединениях...")
+	cancelOperationCtx()
+
+	err := Server.Shutdown(timeoutCtx)
+
+	return err
 }
 
 // fsHandler обрабатывает HTTP-запросы для получения информации о содержимом директории.
@@ -41,7 +71,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
+	rootDirEntities, err := fs.SortedDirEntities(operationCtx, rootPath, sortType)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "директория не существует", http.StatusNotFound)

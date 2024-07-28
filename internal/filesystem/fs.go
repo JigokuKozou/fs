@@ -1,12 +1,12 @@
 package filesystem
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"slices"
-	"sync"
 	"time"
 )
 
@@ -30,10 +30,10 @@ func NewDirEntity(isDir bool, name string, size int64) DirEntity {
 
 // SortedDirEntities получает информацию о сущностях в директории по пути rootPath,
 // сортирует их по заданному sortType и возвращает отсортированную информацию.
-func SortedDirEntities(rootPath string, sortType string) ([]DirEntity, error) {
+func SortedDirEntities(ctx context.Context, rootPath string, sortType string) ([]DirEntity, error) {
 	start := time.Now()
 
-	dirEntities, err := RootDirEntities(rootPath)
+	dirEntities, err := RootDirEntities(ctx, rootPath)
 	if err != nil {
 		return nil, err
 	}
@@ -49,20 +49,17 @@ func SortedDirEntities(rootPath string, sortType string) ([]DirEntity, error) {
 }
 
 // RootDirEntities - получает информацию о файлах и директориях в корневой директории.
-func RootDirEntities(rootPath string) ([]DirEntity, error) {
+func RootDirEntities(ctx context.Context, rootPath string) ([]DirEntity, error) {
 	rootEntries, err := os.ReadDir(rootPath)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка чтения корневой директории [rootPath=%s]: %w", rootPath, err)
 	}
 
-	rootDirEntities := make([]DirEntity, len(rootEntries))
-	var wg sync.WaitGroup
-	wg.Add(len(rootEntries))
+	rootDirEntities := make([]DirEntity, 0, len(rootEntries))
+	rootDirEntitiesChannel := make(chan DirEntity, len(rootEntries))
 
-	for indexDir, dirEntry := range rootEntries {
-		go func(rootPath string, i int, dirEntry os.DirEntry) {
-			defer wg.Done()
-
+	for _, dirEntry := range rootEntries {
+		go func(rootPath string, dirEntry os.DirEntry) {
 			dirPath := filepath.Join(rootPath, dirEntry.Name())
 			dirEntity, err := mapToDirEntity(dirPath, dirEntry)
 			if err != nil {
@@ -73,11 +70,18 @@ func RootDirEntities(rootPath string) ([]DirEntity, error) {
 					dirEntity.SetSize(DefaultDirSize)
 				}
 			}
-			rootDirEntities[i] = dirEntity
-		}(rootPath, indexDir, dirEntry)
+			rootDirEntitiesChannel <- dirEntity
+		}(rootPath, dirEntry)
 	}
 
-	wg.Wait()
+	for i := 0; i < len(rootEntries); i++ {
+		select {
+		case val := <-rootDirEntitiesChannel:
+			rootDirEntities = append(rootDirEntities, val)
+		case <-ctx.Done():
+			return rootDirEntities, fmt.Errorf("RootDirEntities: операция прервана: %w", ctx.Err())
+		}
+	}
 
 	return rootDirEntities, nil
 }
@@ -96,9 +100,6 @@ func mapToDirEntity(dirPath string, dirEntry os.DirEntry) (DirEntity, error) {
 		if err != nil {
 			return DirEntity{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
 		}
-		if size == 0 {
-			size = DefaultDirSize
-		}
 
 		dirEntity.SetSize(size)
 	}
@@ -111,21 +112,24 @@ func CalculateDirSize(dirPath string) (int64, error) {
 	var size int64
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("Не удалось получить информацию о файле [dirPath=%s]: %s\n", path, err)
+			log.Printf("Не удалось получить информацию о файле [path=%s]: %s\n", path, err)
 
 			return nil
 		}
 
-		if !info.IsDir() {
-			size += info.Size()
-		} else if path == dirPath {
-			// Прибавляем размер текущей директории к общему размеру
+		if info.IsDir() {
+			size += DefaultDirSize
+		} else {
 			size += info.Size()
 		}
 		return nil
 	})
 	if err != nil {
-		return 0, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+		return DefaultDirSize, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
+	}
+	// Выставляем размер пустой директории по умолчанию
+	if size == 0 {
+		size = DefaultDirSize
 	}
 
 	return size, nil

@@ -18,11 +18,7 @@ func main() {
 		}
 	}()
 
-	// Создаём контекст программы
-	ctx := context.Background()
-
-	// Передаём контекст серверу
-	go server.Run(ctx)
+	go server.Run()
 
 	// Ожидание сигнала завершения работы
 	stop := make(chan os.Signal, 1)
@@ -32,7 +28,7 @@ func main() {
 	log.Print("Получен сигнал остановки сервера. Завершение работы...")
 
 	// Завершение работы сервера
-	if err := server.Shutdown(5 * time.Second); err != nil {
+	if err := server.Shutdown(context.Background(), 5*time.Second); err != nil {
 		log.Fatalf("Не удалось корректно завершить работу сервера: %v", err)
 	}
 

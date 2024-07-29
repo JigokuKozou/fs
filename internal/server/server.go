@@ -16,18 +16,8 @@ import (
 
 var Server *http.Server
 
-var ctx context.Context
-var operationCtx context.Context
-var cancelOperationCtx context.CancelFunc
-
 // Run запускает HTTP-сервер.
-func Run(outerCtx context.Context) {
-	// Сохраняем внешний контекст
-	ctx = outerCtx
-
-	// Создаём контекст для отмены долгих операций
-	operationCtx, cancelOperationCtx = context.WithCancel(ctx)
-	defer cancelOperationCtx()
+func Run() {
 
 	config, err := config.GetConfig()
 	if err != nil {
@@ -48,15 +38,12 @@ func Run(outerCtx context.Context) {
 }
 
 // Shutdown останавливает HTTP-сервер. Возвращает ошибку метода http.Server.Shutdown.
-func Shutdown(timeout time.Duration) error {
+func Shutdown(ctx context.Context, timeout time.Duration) error {
 	log.Println("Сервер останавливается...")
 
 	// Контекст для ожидания закрытия соединений
 	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, timeout)
 	defer timeoutCancel()
-
-	log.Println("Отмена долгих операций в открытых соединениях...")
-	cancelOperationCtx()
 
 	err := Server.Shutdown(timeoutCtx)
 
@@ -71,7 +58,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootDirEntities, err := fs.SortedDirEntities(operationCtx, rootPath, sortType)
+	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "директория не существует", http.StatusNotFound)

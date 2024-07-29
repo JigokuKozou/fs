@@ -1,12 +1,12 @@
 package filesystem
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"slices"
+	"sync"
 	"time"
 )
 
@@ -30,10 +30,10 @@ func NewDirEntity(isDir bool, name string, size int64) DirEntity {
 
 // SortedDirEntities получает информацию о сущностях в директории по пути rootPath,
 // сортирует их по заданному sortType и возвращает отсортированную информацию.
-func SortedDirEntities(ctx context.Context, rootPath string, sortType string) ([]DirEntity, error) {
+func SortedDirEntities(rootPath string, sortType string) ([]DirEntity, error) {
 	start := time.Now()
 
-	dirEntities, err := RootDirEntities(ctx, rootPath)
+	dirEntities, err := RootDirEntities(rootPath)
 	if err != nil {
 		return nil, err
 	}
@@ -49,18 +49,20 @@ func SortedDirEntities(ctx context.Context, rootPath string, sortType string) ([
 }
 
 // RootDirEntities - получает информацию о файлах и директориях в корневой директории.
-func RootDirEntities(ctx context.Context, rootPath string) ([]DirEntity, error) {
+func RootDirEntities(rootPath string) ([]DirEntity, error) {
 	rootEntries, err := os.ReadDir(rootPath)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка чтения корневой директории [rootPath=%s]: %w", rootPath, err)
 	}
 
-	rootDirEntities := make([]DirEntity, 0, len(rootEntries))
-	rootDirEntitiesChannel := make(chan DirEntity, len(rootEntries))
-	defer close(rootDirEntitiesChannel)
+	rootDirEntities := make([]DirEntity, len(rootEntries))
+	var wg sync.WaitGroup
+	wg.Add(len(rootEntries))
 
-	for _, dirEntry := range rootEntries {
-		go func(rootPath string, dirEntry os.DirEntry) {
+	for indexDir, dirEntry := range rootEntries {
+		go func(rootPath string, dirEntry os.DirEntry, wg *sync.WaitGroup, indexDir int) {
+			defer wg.Done()
+
 			dirPath := filepath.Join(rootPath, dirEntry.Name())
 			dirEntity, err := mapToDirEntity(dirPath, dirEntry)
 			if err != nil {
@@ -71,19 +73,11 @@ func RootDirEntities(ctx context.Context, rootPath string) ([]DirEntity, error) 
 					dirEntity.SetSize(DefaultDirSize)
 				}
 			}
-			rootDirEntitiesChannel <- dirEntity
-		}(rootPath, dirEntry)
+			rootDirEntities[indexDir] = dirEntity
+		}(rootPath, dirEntry, &wg, indexDir)
 	}
 
-	for i := 0; i < len(rootEntries); i++ {
-		select {
-		case val := <-rootDirEntitiesChannel:
-			rootDirEntities = append(rootDirEntities, val)
-		case <-ctx.Done():
-			return rootDirEntities, fmt.Errorf("RootDirEntities: операция прервана: %w", ctx.Err())
-		}
-	}
-
+	wg.Wait()
 	return rootDirEntities, nil
 }
 

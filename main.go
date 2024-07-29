@@ -21,23 +21,8 @@ func main() {
 	go server.Run()
 
 	// Канал для ожидания сигналов завершения работы
-	stop := make(chan os.Signal, 4)
-
-	// Ожидание сигнала SIGINT (Ctrl+C) для завершения работы
-	// Приложение должно закрыться после нажатия Ctrl+C
-	signal.Notify(stop, os.Interrupt)
-
-	// Ожидание сигнала SIGTERM ( Terminate ) для завершения работы
-	// Этот сигнал будет отправлен операционной системой при завершении процесса
-	signal.Notify(stop, syscall.SIGTERM)
-
-	// Ожидание сигнала SIGTSTP (stop with signal) для завершения работы
-	// Этот сигнал будет отправлен операционной системой при нажатии комбинации клавиш Ctrl+Z
-	signal.Notify(stop, syscall.SIGTSTP)
-
-	// Ожидание сигнала SIGQUIT (quit) для завершения работы
-	// Этот сигнал будет отправлен операционной системой при нажатии комбинации клавиш Ctrl+\
-	signal.Notify(stop, syscall.SIGQUIT)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGTSTP, syscall.SIGQUIT)
 
 	<-stop
 	log.Print("Получен сигнал остановки сервера. Завершение работы...")

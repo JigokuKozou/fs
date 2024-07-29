@@ -15,35 +15,30 @@
     <section class="container">
         <div class="content">
             <div class="control_panel">
-                <button class="control_panel__button_back">Назад</button>
-                <input class="rootPath" type="text" value="/">
+                <button id="back-button">Назад</button>
+                <input id="root-path" type="text" value="/">
             </div>
-            <table class="dirTable">
-                <tr>
-                    <th>Тип</th>
-                    <th>Имя</th>
-                    <th class="dirTable__size"><span class="selectable_text">Размер</span></th>
-                </tr>
-                <tr class="selectable">
-                    <td>Дир</td>
-                    <td>snap</td>
-                    <td class="dirTable__size">7.34 Gb</td>
-                </tr>
-                <tr class="selectable">
-                    <td>Дир</td>
-                    <td>var</td>
-                    <td class="dirTable__size">4.35 Gb</td>
-                </tr>
-                <tr>
-                    <td>Файл</td>
-                    <td>swapfile</td>
-                    <td class="dirTable__size">2.00 Gb</td>
-                </tr>
+            <table class="dir_table">
+                <thead>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Имя</th>
+                        <th class="dir_table__size"><span class="selectable_text">
+                            <div class="arrow"></div>
+                            Размер
+                        </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
             </table>
         </div>
     </section>
     <footer class="footer">
         <p>© 2024. Все права защищены?</p>
     </footer>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -103,11 +103,11 @@ button:active {
     margin-left: 10px;
     padding-inline: 10px;
     border-radius: 20px;
-    
+
     pointer-events: none;
 }
 
-.dirTable {
+.dir_table {
     width: 100%;
     margin-block: 10px;
     
@@ -120,16 +120,16 @@ button:active {
 
 }
 
-.dirTable th {
+.dir_table th {
     border-bottom: 2px solid var(--main-text-color);
     cursor: default;
 }
 
-.dirTable td {
+.dir_table td {
     border-bottom: 1px solid var(--main-text-color);
 }
 
-.dirTable__size {
+.dir_table__size {
     text-align: right;
 }
 
@@ -142,4 +142,17 @@ button:active {
     padding: 10px;
 
     text-align: center;
+}
+
+.arrow {
+    display: inline-block;
+    width: 0;  
+    height: 0;  
+    border-left: 5px solid transparent; 
+    border-right: 5px solid transparent; 
+    border-bottom: 10px solid black; 
+    transition: transform 0.3s;
+}
+.arrow.rotate {
+    transform: rotate(180deg);
 }

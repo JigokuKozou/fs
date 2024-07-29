@@ -14,7 +14,7 @@ const DIR_ENTRY_NAME = 'name'
 const DIR_ENTRY_TYPE = 'type'
 const DIR_ENTRY_SIZE = 'size'
 
-const DEFAULT_ROOT_PATH = '/home/ilya'
+const DEFAULT_ROOT_PATH = '/home'
 const DEFAULT_SORT_TYPE = SortOrder.DESC
 
 const backButton = document.getElementById('back-button')
@@ -40,7 +40,7 @@ function changeRootPath(path) {
 
 function setSortType(type) {
     sortType = type
-    if (sortType === SortOrder.ASC) {
+    if (sortType === SortOrder.DESC) {
         sizeArrow.classList.add('rotate')
     } else {
         sizeArrow.classList.remove('rotate')

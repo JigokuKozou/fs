@@ -1,0 +1,114 @@
+/*
+ * Здесь определены переменные CSS, которые используются для настройки стилей в приложении.
+ */
+
+:root {
+    --main-bg-color: white; /* Цвет фона */
+    --main-text-color: black; /* Цвет текста */
+    
+    --bg-color-hover: #afbacc; /* Цвет фона кнопок */
+
+    --header-bg-color: black; /* Цвет фона заголовка */
+    --header-text-color: white; /* Цвет текста заголовка */
+}
+
+/*
+ * Здесь импортируется шрифт Roboto из Google Fonts.
+ * Это позволяет использовать этот шрифт в приложении.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+body {
+    display: flex; /* Отображается в виде строки */
+    flex-direction: column; /* Ориентация строки - вертикально */
+    min-height: 100vh; /* Минимальная высота равна высоте окна браузера */
+
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+}
+
+button {
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    border: 2px solid var(--main-text-color);
+    border-radius: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--bg-color-hover);
+}
+
+.header {
+    flex: 0 0 auto; /* Заголовок занимает фиксированное место */
+
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
+    padding: 15px;
+}
+
+.header__title {
+    font-size: 30px;
+    text-align: center;
+}
+
+.container {
+    flex: 1 1 auto; /* Контейнер занимает остаток свободного места */
+    overflow-y: auto; /* Если контент превышает высоту контейнера, появляется полоса прокрутки */
+}
+
+.content {
+    width: 80%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.buttons {
+    margin-top: 10px;
+}
+
+.dirTable {
+    width: 100%;
+    margin-block: 10px;
+    
+    /* Удаляем межколоночные отступы */
+    border-spacing: 0;
+
+    border: 2px solid var(--main-text-color);
+    border-radius: 10px;
+    padding: 10px;
+
+}
+
+.dirTable tr:not(:first-child) {
+    cursor: pointer;
+}
+
+.dirTable tr:not(:first-child):hover {
+    background-color: var(--bg-color-hover);
+}
+
+.dirTable th {
+    border-bottom: 2px solid var(--main-text-color);
+}
+
+.dirTable td {
+    border-bottom: 1px solid var(--main-text-color);
+}
+
+.dirTable__size {
+    text-align: right;
+}
+
+.footer {
+    /* Занизуем элемент на всю ширину доступного пространства */
+    flex: 0 0 auto;
+
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
+    padding: 10px;
+
+    text-align: center;
+}

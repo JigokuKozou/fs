@@ -29,6 +29,8 @@ func Run() {
 		Handler: http.DefaultServeMux,
 	}
 
+	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./web/static"))))
+
 	http.HandleFunc("/fs", fsHandler)
 
 	fmt.Printf("Запуск сервера на http://localhost:%s ...\n", config.ServerPort)

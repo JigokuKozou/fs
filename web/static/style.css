@@ -35,10 +35,37 @@ button {
     border-radius: 10px;
     padding: 5px 10px;
     cursor: pointer;
+    box-shadow: 0 3px #999;
 }
-
 button:hover {
     background-color: var(--bg-color-hover);
+}
+button:active {
+    background-color: var(--bg-color-hover);
+    box-shadow: 0 1px #666;
+    transform: translateY(2px);
+}
+
+.selectable {
+    cursor: pointer;
+    user-select: none;
+}
+.selectable:hover {
+    background-color: var(--bg-color-hover);
+}
+.selectable:active {
+    background-color: var(--main-bg-color);
+}
+
+.selectable_text {
+    cursor: pointer;
+    user-select: none;
+}
+.selectable_text:hover {
+    color: #2b2b2b;
+}
+.selectable_text:active {
+    color: var(--main-text-color);
 }
 
 .header {
@@ -51,6 +78,7 @@ button:hover {
 .header__title {
     font-size: 30px;
     text-align: center;
+    cursor: default;
 }
 
 .container {
@@ -65,8 +93,18 @@ button:hover {
     margin: 0 auto;
 }
 
-.buttons {
+.control_panel {
+    display: flex;
     margin-top: 10px;
+}
+
+.control_panel input {
+    width: 100%;
+    margin-left: 10px;
+    padding-inline: 10px;
+    border-radius: 20px;
+    
+    pointer-events: none;
 }
 
 .dirTable {
@@ -82,16 +120,9 @@ button:hover {
 
 }
 
-.dirTable tr:not(:first-child) {
-    cursor: pointer;
-}
-
-.dirTable tr:not(:first-child):hover {
-    background-color: var(--bg-color-hover);
-}
-
 .dirTable th {
     border-bottom: 2px solid var(--main-text-color);
+    cursor: default;
 }
 
 .dirTable td {

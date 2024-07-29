@@ -14,22 +14,22 @@
     </header>
     <section class="container">
         <div class="content">
-            <div class="buttons">
-                <button>Назад</button>
-                <button>Сортировать</button>
+            <div class="control_panel">
+                <button class="control_panel__button_back">Назад</button>
+                <input class="rootPath" type="text" value="/">
             </div>
             <table class="dirTable">
                 <tr>
                     <th>Тип</th>
                     <th>Имя</th>
-                    <th class="dirTable__size">Размер</th>
+                    <th class="dirTable__size"><span class="selectable_text">Размер</span></th>
                 </tr>
-                <tr>
+                <tr class="selectable">
                     <td>Дир</td>
                     <td>snap</td>
                     <td class="dirTable__size">7.34 Gb</td>
                 </tr>
-                <tr>
+                <tr class="selectable">
                     <td>Дир</td>
                     <td>var</td>
                     <td class="dirTable__size">4.35 Gb</td>

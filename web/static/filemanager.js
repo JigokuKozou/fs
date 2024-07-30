@@ -1,4 +1,5 @@
 import fetchDirEntity from './fs_client.js'
+import defaultRootPath from './defaultRootPath.js'
 
 const SortOrder = {
     ASC: 'asc',
@@ -10,12 +11,8 @@ const DirEntityType = {
     DIR: 'Дир'
 }
 
-const DIR_ENTRY_NAME = 'name'
-const DIR_ENTRY_TYPE = 'type'
-const DIR_ENTRY_SIZE = 'size'
-
-const DEFAULT_ROOT_PATH = '/home'
 const DEFAULT_SORT_TYPE = SortOrder.DESC
+let DEFAULT_ROOT_PATH = defaultRootPath || '/home'
 
 const backButton = document.getElementById('back-button')
 
@@ -26,16 +23,13 @@ const sizeArrow = document.querySelector('.arrow');
 
 const dirEntitiesList = document.querySelector('.dir_table tbody');
 
-let rootPath, sortType
-let dirEntities
+let sortType
  
 function changeRootPath(path) {
     if (path.length == 0) {
         path = '/'
     }
-
-    rootPath = path
-    rootPathInput.value = rootPath
+    rootPathInput.value = path
 }
 
 function setSortType(type) {
@@ -52,6 +46,7 @@ function toggleSortType() {
 }
 
 function init() {
+
     changeRootPath(DEFAULT_ROOT_PATH)
     setSortType(DEFAULT_SORT_TYPE)
 
@@ -70,52 +65,70 @@ function initEventListeners() {
         const tr = event.target.closest('tr')
         if (tr.classList.contains('selectable')) {
             const dirName = tr.querySelector('td:nth-child(2)').textContent
-            if (rootPath === '/') {
+            if (rootPathInput.value === '/') {
                 changeRootPath('/' + dirName)
             } else {
-                changeRootPath(`${rootPath}/${dirName}`)
+                changeRootPath(`${rootPathInput.value}/${dirName}`)
             }
             fetchAndRenderDirEntities()
         }
     })
 
     backButton.addEventListener('click', function() {
-        const splittedRootPath = rootPath.split('/')
+        const splittedRootPath = rootPathInput.value.split('/')
         splittedRootPath.pop()
         changeRootPath(splittedRootPath.join('/'))
         fetchAndRenderDirEntities()
     })
 }
 
-async function fetchAndRenderDirEntities() {
+function fetchAndRenderDirEntities() {
     try {
-        dirEntities = await fetchDirEntity(rootPath, sortType)
-
+        disableEventsWhileLoading()
         dirEntitiesList.innerHTML = ''
+
+        const rootPath = rootPathInput.value
+        fetchDirEntity(rootPath, sortType)
+        .then(dirEntities => renderDirEntities(dirEntities))
+        .then(enableEventsAfterLoading)
+        .catch(error => console.error(error))
         
-        dirEntities.forEach(dirEntity => {
-            const row = document.createElement('tr')
-
-            const typeCell = document.createElement('td')
-            typeCell.textContent = dirEntity.type;
-            row.appendChild(typeCell)
-
-            const nameCell = document.createElement('td')
-            nameCell.textContent = dirEntity.name;
-            row.appendChild(nameCell)
-
-            const sizeCell = document.createElement('td')
-            sizeCell.textContent = dirEntity.size;
-            row.appendChild(sizeCell)
-
-            if (dirEntity.type === DirEntityType.DIR) {
-                row.classList.add('selectable')
-            }
-            dirEntitiesList.appendChild(row)
-        });
     } catch (error) {
         console.error(error)
     }
+}
+
+function renderDirEntities(dirEntities) {
+    dirEntities.forEach(dirEntity => {
+        const row = document.createElement('tr')
+
+        const typeCell = document.createElement('td')
+        typeCell.textContent = dirEntity.type;
+        row.appendChild(typeCell)
+
+        const nameCell = document.createElement('td')
+        nameCell.textContent = dirEntity.name;
+        row.appendChild(nameCell)
+
+        const sizeCell = document.createElement('td')
+        sizeCell.textContent = dirEntity.size;
+        row.appendChild(sizeCell)
+
+        if (dirEntity.type === DirEntityType.DIR) {
+            row.classList.add('selectable')
+        }
+        dirEntitiesList.appendChild(row)
+    });
+}
+
+const blockedElements = [backButton, sizeButton, dirEntitiesList]
+
+function disableEventsWhileLoading() {
+    blockedElements.forEach(element => element.style.pointerEvents = 'none')
+}
+
+function enableEventsAfterLoading() {
+    blockedElements.forEach(element => element.style.pointerEvents = 'auto')
 }
 
 export default init

@@ -14,18 +14,30 @@ import (
 	fs "github.com/JigokuKozou/fs/internal/filesystem"
 )
 
+type Response struct {
+	RootDir  string         `json:"root_dir"`
+	Entities []fs.DirEntity `json:"entities"`
+}
+
+type ResponseError struct {
+	ErrorCode int    `json:"error_code"`
+	Message   string `json:"message"`
+}
+
 var Server *http.Server
+var configServer config.Config
 
 // Run запускает HTTP-сервер.
 func Run() {
 
-	config, err := config.GetConfig()
+	var err error
+	configServer, err = config.GetConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	Server = &http.Server{
-		Addr:    fmt.Sprintf(":%s", config.ServerPort),
+		Addr:    fmt.Sprintf(":%s", configServer.ServerPort),
 		Handler: http.DefaultServeMux,
 	}
 
@@ -33,7 +45,7 @@ func Run() {
 
 	http.HandleFunc("/fs", fsHandler)
 
-	fmt.Printf("Запуск сервера на http://localhost:%s ...\n", config.ServerPort)
+	fmt.Printf("Запуск сервера на http://localhost:%s ...\n", configServer.ServerPort)
 	if err = Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalln(err)
 	}
@@ -54,44 +66,71 @@ func Shutdown(ctx context.Context, timeout time.Duration) error {
 
 // fsHandler обрабатывает HTTP-запросы для получения информации о содержимом директории.
 func fsHandler(w http.ResponseWriter, r *http.Request) {
+	// Устанавливаем заголовок ответа, указывая, что содержимое будет в формате JSON
+	w.Header().Set("Content-Type", "application/json")
+
 	rootPath, sortType, err := getRequestParams(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		var responseErr = ResponseError{
+			ErrorCode: http.StatusBadRequest,
+			Message:   err.Error(),
+		}
+
+		jsonResponseErr, err := json.Marshal(responseErr)
+		if err != nil {
+			http.Error(w, "внутренняя ошибка сервера", http.StatusInternalServerError)
+			log.Println(err)
+			return
+		}
+
+		w.WriteHeader(responseErr.ErrorCode)
+		w.Write(jsonResponseErr)
+		log.Println(err)
 		return
 	}
 
 	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
 	if err != nil {
+		var responseErr = ResponseError{}
 		if errors.Is(err, os.ErrNotExist) {
-			http.Error(w, "директория не существует", http.StatusNotFound)
-			log.Println(err)
+			responseErr.ErrorCode = http.StatusNotFound
+			responseErr.Message = "директория не существует"
+		} else if errors.Is(err, os.ErrPermission) {
+			responseErr.ErrorCode = http.StatusForbidden
+			responseErr.Message = "нет доступа к директории"
 			return
-		}
-		if errors.Is(err, os.ErrPermission) {
-			http.Error(w, "нет доступа к директории", http.StatusForbidden)
-			log.Println(err)
+		} else if _, ok := err.(fs.ErrUnknownSortType); ok {
+			responseErr.ErrorCode = http.StatusBadRequest
+			responseErr.Message = "неверный тип сортировки"
 			return
+		} else {
+			responseErr.ErrorCode = http.StatusInternalServerError
+			responseErr.Message = "внутренняя ошибка сервера"
 		}
-		if err, ok := err.(fs.ErrUnknownSortType); ok {
-			http.Error(w, "неверный тип сортировки", http.StatusBadRequest)
-			log.Println(err)
+
+		jsonResponseErr, errJson := json.Marshal(responseErr)
+		if errJson != nil {
+			http.Error(w, "внутренняя ошибка сервера", http.StatusInternalServerError)
+			log.Println(errJson)
 			return
 		}
 
-		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		w.WriteHeader(responseErr.ErrorCode)
+		w.Write(jsonResponseErr)
 		log.Println(err)
 		return
 	}
 
-	jsonResponse, err := json.Marshal(rootDirEntities)
+	response := Response{
+		RootDir:  rootPath,
+		Entities: rootDirEntities,
+	}
+	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "Внутренняя ошибка сервера", 500)
 		log.Println(err)
 		return
 	}
-
-	// Устанавливаем заголовок ответа, указывая, что содержимое будет в формате JSON
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
 }
 
@@ -103,8 +142,12 @@ func getRequestParams(r *http.Request) (string, string, error) {
 	rootPath := requestUrlValues.Get("root")
 	sortType := requestUrlValues.Get("sort")
 
-	if rootPath == "" || sortType == "" {
-		err := fmt.Errorf("передан пустой параметр пути и/или сортировки [root=%s, sort=%s]",
+	if rootPath == "" {
+		rootPath = configServer.DefaultRootPath
+	}
+
+	if sortType == "" {
+		err := fmt.Errorf("передан пустой параметр сортировки [root=%s, sort=%s]",
 			rootPath, sortType)
 		return "", "", err
 	}

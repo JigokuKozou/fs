@@ -40,7 +40,9 @@ function initEventListeners() {
 
 function loadDirEntities() {
     disableEventsWhileLoading()
+
     dirTable.loadDirEntities(rootPathInput.value)
+    .then(response => changeRootPath(response.rootDir))
     .then(enableEventsAfterLoading)
     .catch(error => {
         enableEventsAfterLoading()

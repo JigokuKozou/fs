@@ -18,7 +18,12 @@ function fetchDirEntity(rootPath, sortType) {
             }
             return response.json()
         })
-        .then(data => data.map(item => ({ type: item.type, name: item.name, size: item.size })))
+        .then(data => { 
+            return {
+                rootDir: data.root_dir, 
+                entities: data.entities
+            }
+        })
 }
 
 export { SortOrder, DirEntityType, fetchDirEntity }

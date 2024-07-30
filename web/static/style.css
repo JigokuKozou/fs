@@ -156,3 +156,7 @@ button:active {
 .arrow.rotate {
     transform: rotate(180deg);
 }
+
+.loadingScreen {
+    text-align: center;
+}

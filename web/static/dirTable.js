@@ -6,6 +6,7 @@ const sizeButton = document.querySelector('.dir_table__size .selectable_text');
 const sizeArrow = document.querySelector('.arrow');
 
 const dirEntitiesList = document.querySelector('.dir_table tbody');
+const loadingScreen = document.querySelector('.loadingScreen');
 
 let sortType
 
@@ -27,21 +28,24 @@ function init() {
     setSortType(DEFAULT_SORT_TYPE)
 }
 
-function loadDirEntities(path) {
+async function loadDirEntities(path) {
     disableEventsWhileLoading()
     dirEntitiesList.innerHTML = ''
+    showLoadingScreen()
 
-    return fsClient.fetchDirEntity(path, sortType)
-    .then(dirEntities => renderDirEntities(dirEntities))
-    .then(enableEventsAfterLoading)
-    .catch(error => {
-        enableEventsAfterLoading()
-        alert(error)
-    })
+    try {
+        const response = await fsClient.fetchDirEntity(path, sortType);
+        renderDirEntities(response.entities);
+        return response;
+    } catch (error) {
+        alert(error);
+    } finally {
+        enableEventsAfterLoading();
+        hideLoadingScreen();
+    }
 }
 
 function renderDirEntities(dirEntities) {
-    dirEntitiesList.innerHTML = ''
     dirEntities.forEach(dirEntity => {
         const row = document.createElement('tr')
 
@@ -73,6 +77,16 @@ function disableEventsWhileLoading() {
 function enableEventsAfterLoading() {
     sizeButton.style.pointerEvents = 'auto'
     dirEntitiesList.style.pointerEvents = 'auto'
+}
+
+// Показать сообщение о загрузке
+function showLoadingScreen() {
+    dirEntitiesList.appendChild(loadingScreen);
+}
+
+// Скрыть сообщение о загрузке
+function hideLoadingScreen() {
+    dirEntitiesList.removeChild(loadingScreen);
 }
 
 export default { dirEntitiesList, sizeButton, init, setSortType, toggleSortType, loadDirEntities }

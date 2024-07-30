@@ -14,14 +14,16 @@ import (
 	fs "github.com/JigokuKozou/fs/internal/filesystem"
 )
 
+// Response - структура, возвращаемая HTTP-сервером.
 type Response struct {
-	RootDir  string         `json:"root_dir"`
-	Entities []fs.DirEntity `json:"entities"`
+	RootDir  string         `json:"root_dir"` // Путь к корневой директории.
+	Entities []fs.DirEntity `json:"entities"` // Список сущностей в корневой директории.
 }
 
+// ResponseError - структура ошибки, возвращаемая HTTP-сервером.
 type ResponseError struct {
-	ErrorCode int    `json:"error_code"`
-	Message   string `json:"message"`
+	ErrorCode int    `json:"error_code"` // Код ошибки.
+	Message   string `json:"message"`    // Сообщение об ошибке.
 }
 
 var Server *http.Server

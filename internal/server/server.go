@@ -16,14 +16,10 @@ import (
 
 // Response - структура, возвращаемая HTTP-сервером.
 type Response struct {
-	RootDir  string         `json:"root_dir"` // Путь к корневой директории.
-	Entities []fs.DirEntity `json:"entities"` // Список сущностей в корневой директории.
-}
-
-// ResponseError - структура ошибки, возвращаемая HTTP-сервером.
-type ResponseError struct {
-	ErrorCode int    `json:"error_code"` // Код ошибки.
-	Message   string `json:"message"`    // Сообщение об ошибке.
+	RootDir      string         `json:"root_dir"`      // Путь к корневой директории.
+	Entities     []fs.DirEntity `json:"entities"`      // Список сущностей в корневой директории.
+	ErrorCode    int            `json:"error_code"`    // Код ошибки.
+	ErrorMessage string         `json:"error_message"` // Сообщение об ошибке.
 }
 
 var Server *http.Server
@@ -73,9 +69,9 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 
 	rootPath, sortType, err := getRequestParams(r)
 	if err != nil {
-		var responseErr = ResponseError{
-			ErrorCode: http.StatusBadRequest,
-			Message:   err.Error(),
+		var responseErr = Response{
+			ErrorCode:    http.StatusBadRequest,
+			ErrorMessage: err.Error(),
 		}
 
 		jsonResponseErr, err := json.Marshal(responseErr)
@@ -93,21 +89,19 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 
 	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
 	if err != nil {
-		var responseErr = ResponseError{}
+		var responseErr = Response{}
 		if errors.Is(err, os.ErrNotExist) {
 			responseErr.ErrorCode = http.StatusNotFound
-			responseErr.Message = "директория не существует"
+			responseErr.ErrorMessage = "директория не существует"
 		} else if errors.Is(err, os.ErrPermission) {
 			responseErr.ErrorCode = http.StatusForbidden
-			responseErr.Message = "нет доступа к директории"
-			return
+			responseErr.ErrorMessage = "нет доступа к директории"
 		} else if _, ok := err.(fs.ErrUnknownSortType); ok {
 			responseErr.ErrorCode = http.StatusBadRequest
-			responseErr.Message = "неверный тип сортировки"
-			return
+			responseErr.ErrorMessage = "неверный тип сортировки"
 		} else {
 			responseErr.ErrorCode = http.StatusInternalServerError
-			responseErr.Message = "внутренняя ошибка сервера"
+			responseErr.ErrorMessage = "внутренняя ошибка сервера"
 		}
 
 		jsonResponseErr, errJson := json.Marshal(responseErr)

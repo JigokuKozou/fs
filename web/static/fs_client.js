@@ -14,16 +14,11 @@ function fetchDirEntity(rootPath, sortType) {
     const url = `/fs?root=${encodeURIComponent(rootPath)}&sort=${encodeURIComponent(sortType)}`;
     return fetch(url, { method: "GET" })
         .then(response => {
-            if (!response?.ok) {
-                throw new Error(response.statusText);
+            if (response.status === 500) {
+                throw new Error("Внутренняя ошибка сервера")
             }
+
             return response.json()
-        })
-        .then(data => { 
-            return {
-                rootDir: data.root_dir, 
-                entities: data.entities
-            }
         })
 }
 

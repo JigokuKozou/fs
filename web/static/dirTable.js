@@ -33,21 +33,27 @@ function init() {
 }
 
 // Обновляет таблицу списка файлов и директорий
-async function loadDirEntities(path) {
+function loadDirEntities(path) {
     disableEventsWhileLoading()
     dirEntitiesList.innerHTML = ''
     showLoadingScreen()
 
-    try {
-        const response = await fsClient.fetchDirEntity(path, sortType);
+    return fsClient.fetchDirEntity(path, sortType)
+    .then(response => {
+        console.log(response)
+        if (response.entities === null || response.entities.length === 0) {
+            showInfoPanel('Папка пуста')
+        }
         renderDirEntities(response.entities);
-        return response;
-    } catch (error) {
-        alert(error);
-    } finally {
-        enableEventsAfterLoading();
-        hideLoadingScreen();
-    }
+        return response
+    })
+    .catch(error => {
+        alert(error.message);
+    })
+    .finally(() => {
+        hideLoadingScreen()
+        enableEventsAfterLoading()
+    })
 }
 
 // Создаёт и добавляет строки файлов и директорий в tbody на основе переданного массива
@@ -95,6 +101,12 @@ function showLoadingScreen() {
 // Скрыть сообщение о загрузке
 function hideLoadingScreen() {
     dirEntitiesList.removeChild(loadingScreen);
+}
+
+function showInfoPanel(message) { 
+
+    // TODO: Показать панель с информацией
+    alert("Инфо панель: " + message)
 }
 
 export default { dirEntitiesList, sizeButton, init, setSortType, toggleSortType, loadDirEntities }

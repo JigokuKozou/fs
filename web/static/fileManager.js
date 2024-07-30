@@ -47,11 +47,7 @@ function loadDirEntities() {
 
     dirTable.loadDirEntities(rootPathInput.value)
     .then(response => changeRootPath(response.rootDir))
-    .then(enableEventsAfterLoading)
-    .catch(error => {
-        enableEventsAfterLoading()
-        alert(error)
-    })
+    .finally(enableEventsAfterLoading)
 }
 
 // Отключает события обновляющие таблицу

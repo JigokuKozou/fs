@@ -5,7 +5,8 @@ const DEFAULT_ROOT_PATH = ""
 const backButton = document.getElementById('back-button')
 
 const rootPathInput = document.getElementById('root-path')
- 
+
+// Изменяет корневой путь в input
 function changeRootPath(path) {
     if (path.length == 0) {
         path = '/'
@@ -23,6 +24,8 @@ function init() {
 }
 
 function initEventListeners() {
+
+    // Переходим переходит меняет путь до выбранной директории и обновляет таблицу
     dirTable.dirEntitiesList.addEventListener('click', function(event) {
         const tr = event.target.closest('tr')
         if (tr.classList.contains('selectable')) {
@@ -38,6 +41,7 @@ function initEventListeners() {
     })
 }
 
+// Обновление таблицы с блокировкой событий обновления
 function loadDirEntities() {
     disableEventsWhileLoading()
 
@@ -50,10 +54,12 @@ function loadDirEntities() {
     })
 }
 
+// Отключает события обновляющие таблицу
 function disableEventsWhileLoading() {
     backButton.style.pointerEvents = 'none'
 }
 
+// Включает события обновляющие таблицу
 function enableEventsAfterLoading() {
     backButton.style.pointerEvents = 'auto'
 }

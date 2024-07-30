@@ -8,12 +8,13 @@ const DirEntityType = {
     DIR: 'Дир'
 }
 
+// Запрос на получение информации о содержимом директории
 function fetchDirEntity(rootPath, sortType) {
     rootPath = rootPath === undefined ? '' : rootPath
     const url = `/fs?root=${encodeURIComponent(rootPath)}&sort=${encodeURIComponent(sortType)}`;
     return fetch(url, { method: "GET" })
         .then(response => {
-            if (!response.ok) {
+            if (!response?.ok) {
                 throw new Error(response.statusText);
             }
             return response.json()

@@ -2,6 +2,7 @@ import * as fsClient from './fs_client.js'
 
 const DEFAULT_SORT_TYPE = fsClient.SortOrder.DESC
 
+// Кнопка размера и стрелка сортировки
 const sizeButton = document.querySelector('.dir_table__size .selectable_text');
 const sizeArrow = document.querySelector('.arrow');
 
@@ -10,6 +11,8 @@ const loadingScreen = document.querySelector('.loadingScreen');
 
 let sortType
 
+// Устанавливает тип сортировки и обновляет стрелку сортировки
+// Принимает тип сортировки (fsClient.SortOrder.ASC или fsClient.SortOrder.DESC)
 function setSortType(type) {
     sortType = type
     if (sortType === fsClient.SortOrder.DESC) {
@@ -19,6 +22,7 @@ function setSortType(type) {
     }
 }
 
+// Переключает тип сортировки
 function toggleSortType() {
     setSortType(sortType === fsClient.SortOrder.ASC ? 
         fsClient.SortOrder.DESC : fsClient.SortOrder.ASC)
@@ -28,6 +32,7 @@ function init() {
     setSortType(DEFAULT_SORT_TYPE)
 }
 
+// Обновляет таблицу списка файлов и директорий
 async function loadDirEntities(path) {
     disableEventsWhileLoading()
     dirEntitiesList.innerHTML = ''
@@ -45,6 +50,7 @@ async function loadDirEntities(path) {
     }
 }
 
+// Создаёт и добавляет строки файлов и директорий в tbody на основе переданного массива
 function renderDirEntities(dirEntities) {
     dirEntities.forEach(dirEntity => {
         const row = document.createElement('tr')
@@ -69,11 +75,13 @@ function renderDirEntities(dirEntities) {
     });
 }
 
+// Отключает события обновляющие таблицу
 function disableEventsWhileLoading() {
     sizeButton.style.pointerEvents = 'none'
     dirEntitiesList.style.pointerEvents = 'none'
 }
 
+// Включает события обновляющие таблицу
 function enableEventsAfterLoading() {
     sizeButton.style.pointerEvents = 'auto'
     dirEntitiesList.style.pointerEvents = 'auto'

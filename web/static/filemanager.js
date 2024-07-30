@@ -12,7 +12,7 @@ const DirEntityType = {
 }
 
 const DEFAULT_SORT_TYPE = SortOrder.DESC
-let DEFAULT_ROOT_PATH = defaultRootPath || '/home'
+const DEFAULT_ROOT_PATH = defaultRootPath || '/home'
 
 const backButton = document.getElementById('back-button')
 
@@ -46,7 +46,6 @@ function toggleSortType() {
 }
 
 function init() {
-
     changeRootPath(DEFAULT_ROOT_PATH)
     setSortType(DEFAULT_SORT_TYPE)
 
@@ -99,6 +98,7 @@ function fetchAndRenderDirEntities() {
 }
 
 function renderDirEntities(dirEntities) {
+    dirEntitiesList.innerHTML = ''
     dirEntities.forEach(dirEntity => {
         const row = document.createElement('tr')
 
@@ -112,6 +112,7 @@ function renderDirEntities(dirEntities) {
 
         const sizeCell = document.createElement('td')
         sizeCell.textContent = dirEntity.size;
+        sizeCell.classList.add('dir_table__size');
         row.appendChild(sizeCell)
 
         if (dirEntity.type === DirEntityType.DIR) {

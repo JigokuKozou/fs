@@ -29,12 +29,7 @@ func Run() {
 		Handler: http.DefaultServeMux,
 	}
 
-	// Добавляем передачу файла ./.env
 	http.Handle("/", http.FileServer(http.Dir("./web/static")))
-	http.HandleFunc("/defaultRootPath.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript")
-		w.Write([]byte(fmt.Sprintf("export default '%s'", config.DefaultRootPath)))
-	})
 
 	http.HandleFunc("/fs", fsHandler)
 

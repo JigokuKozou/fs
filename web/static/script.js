@@ -1,5 +1,7 @@
-import init from './filemanager.js'
+import fm from './fileManager.js'
+import initButtonEventListeners from './buttons.js'
 
 document.addEventListener("DOMContentLoaded", function() {
-    init()
+    fm.init()
+    initButtonEventListeners()
 })

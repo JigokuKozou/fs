@@ -19,3 +19,13 @@
 
 # Не игнорировать .env
 !.env
+
+# npm
+# Игнорировать node зависимости
+# Не игнорировать json файлы
+node_modules
+!*.json
+
+# Не игнорировать конфигурацию webpack
+!webpack.config.js
+!.babelrc

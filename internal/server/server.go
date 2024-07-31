@@ -39,7 +39,7 @@ func Run() {
 		Handler: http.DefaultServeMux,
 	}
 
-	http.Handle("/", http.FileServer(http.Dir("./web/static")))
+	http.Handle("/", http.FileServer(http.Dir("./web/dist")))
 
 	http.HandleFunc("/fs", fsHandler)
 

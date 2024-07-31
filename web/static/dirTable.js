@@ -1,4 +1,5 @@
 import * as fsClient from './fs_client.js'
+import loadingScreen from './loadingScreen.js'
 
 const DEFAULT_SORT_TYPE = fsClient.SortOrder.DESC
 
@@ -7,7 +8,6 @@ const sizeButton = document.querySelector('thead .dir_table__size');
 const sizeArrow = document.querySelector('.arrow');
 
 const dirEntitiesList = document.querySelector('.dir_table tbody');
-const loadingScreen = document.querySelector('.loadingScreen');
 
 let sortType
 
@@ -36,11 +36,10 @@ function init() {
 function loadDirEntities(path) {
     disableEventsWhileLoading()
     dirEntitiesList.innerHTML = ''
-    showLoadingScreen()
+    loadingScreen.show(dirEntitiesList)
 
     return fsClient.fetchDirEntity(path, sortType)
     .then(response => {
-        console.log(response)
         if (response.entities === null || response.entities.length === 0) {
             showInfoPanel(response.error_message)
             return response
@@ -52,7 +51,7 @@ function loadDirEntities(path) {
         alert(error.message);
     })
     .finally((response) => {
-        hideLoadingScreen()
+        loadingScreen.hide(dirEntitiesList)
         enableEventsAfterLoading()
 
         return response
@@ -94,16 +93,6 @@ function disableEventsWhileLoading() {
 function enableEventsAfterLoading() {
     sizeButton.style.pointerEvents = 'auto'
     dirEntitiesList.style.pointerEvents = 'auto'
-}
-
-// Показать сообщение о загрузке
-function showLoadingScreen() {
-    dirEntitiesList.appendChild(loadingScreen);
-}
-
-// Скрыть сообщение о загрузке
-function hideLoadingScreen() {
-    dirEntitiesList.removeChild(loadingScreen);
 }
 
 function showInfoPanel(message) { 

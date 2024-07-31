@@ -89,19 +89,22 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 
 	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
 	if err != nil {
-		var responseErr = Response{}
+		var responseErr = Response{
+			RootDir: rootPath,
+		}
+
 		if errors.Is(err, os.ErrNotExist) {
 			responseErr.ErrorCode = http.StatusNotFound
-			responseErr.ErrorMessage = "директория не существует"
+			responseErr.ErrorMessage = "Директория не существует"
 		} else if errors.Is(err, os.ErrPermission) {
 			responseErr.ErrorCode = http.StatusForbidden
-			responseErr.ErrorMessage = "нет доступа к директории"
+			responseErr.ErrorMessage = "Нет доступа к директории"
 		} else if _, ok := err.(fs.ErrUnknownSortType); ok {
 			responseErr.ErrorCode = http.StatusBadRequest
-			responseErr.ErrorMessage = "неверный тип сортировки"
+			responseErr.ErrorMessage = "Неверный тип сортировки"
 		} else {
 			responseErr.ErrorCode = http.StatusInternalServerError
-			responseErr.ErrorMessage = "внутренняя ошибка сервера"
+			responseErr.ErrorMessage = "Внутренняя ошибка сервера"
 		}
 
 		jsonResponseErr, errJson := json.Marshal(responseErr)

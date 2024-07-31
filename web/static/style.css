@@ -57,14 +57,13 @@ button:active {
     background-color: var(--main-bg-color);
 }
 
-.selectable_text {
+.clickable_text {
     cursor: pointer;
-    user-select: none;
 }
-.selectable_text:hover {
+.clickable_text:hover {
     color: #2b2b2b;
 }
-.selectable_text:active {
+.clickable_text:active {
     color: var(--main-text-color);
 }
 
@@ -159,4 +158,11 @@ button:active {
 
 .loadingScreen {
     text-align: center;
+}
+
+.no-select {
+    -webkit-user-select: none; /* Chrome/Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
+    user-select: none; /* Стандартный синтаксис */
 }

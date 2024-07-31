@@ -46,7 +46,7 @@ function loadDirEntities() {
     disableEventsWhileLoading()
 
     dirTable.loadDirEntities(rootPathInput.value)
-    .then(response => changeRootPath(response.rootDir))
+    .then(response => changeRootPath(response.root_dir))
     .finally(enableEventsAfterLoading)
 }
 

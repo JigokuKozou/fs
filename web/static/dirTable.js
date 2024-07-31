@@ -3,7 +3,7 @@ import * as fsClient from './fs_client.js'
 const DEFAULT_SORT_TYPE = fsClient.SortOrder.DESC
 
 // Кнопка размера и стрелка сортировки
-const sizeButton = document.querySelector('.dir_table__size .selectable_text');
+const sizeButton = document.querySelector('thead .dir_table__size');
 const sizeArrow = document.querySelector('.arrow');
 
 const dirEntitiesList = document.querySelector('.dir_table tbody');
@@ -42,7 +42,8 @@ function loadDirEntities(path) {
     .then(response => {
         console.log(response)
         if (response.entities === null || response.entities.length === 0) {
-            showInfoPanel('Папка пуста')
+            showInfoPanel(response.error_message)
+            return response
         }
         renderDirEntities(response.entities);
         return response
@@ -50,9 +51,11 @@ function loadDirEntities(path) {
     .catch(error => {
         alert(error.message);
     })
-    .finally(() => {
+    .finally((response) => {
         hideLoadingScreen()
         enableEventsAfterLoading()
+
+        return response
     })
 }
 

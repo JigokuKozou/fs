@@ -1,5 +1,5 @@
-import dirTable from "./dirTable.js"
 import fileManager from "./fileManager.js"
+import sort from "./sort.js"
 
 function initEventListeners() {
 
@@ -13,8 +13,8 @@ function initEventListeners() {
     })
 
     // Кнопка размера меняет тип сортировки на противоположный и обновляет таблицу
-    dirTable.sizeButton.addEventListener('click', function() {
-        dirTable.toggleSortType()
+    sort.size.button.addEventListener('click', function() {
+        sort.toggleType()
         fileManager.loadDirEntities()
     })
 }

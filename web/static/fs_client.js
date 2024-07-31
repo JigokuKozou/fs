@@ -22,4 +22,4 @@ function fetchDirEntity(rootPath, sortType) {
         })
 }
 
-export { SortOrder, DirEntityType, fetchDirEntity }
+export default { SortOrder, DirEntityType, fetchDirEntity }

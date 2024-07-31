@@ -1,36 +1,8 @@
-import * as fsClient from './fs_client.js'
+import fsClient from './fs_client.js'
 import loadingScreen from './loadingScreen.js'
-
-const DEFAULT_SORT_TYPE = fsClient.SortOrder.DESC
-
-// Кнопка размера и стрелка сортировки
-const sizeButton = document.querySelector('thead .dir_table__size');
-const sizeArrow = document.querySelector('.arrow');
+import sort from './sort.js'
 
 const dirEntitiesList = document.querySelector('.dir_table tbody');
-
-let sortType
-
-// Устанавливает тип сортировки и обновляет стрелку сортировки
-// Принимает тип сортировки (fsClient.SortOrder.ASC или fsClient.SortOrder.DESC)
-function setSortType(type) {
-    sortType = type
-    if (sortType === fsClient.SortOrder.DESC) {
-        sizeArrow.classList.add('rotate')
-    } else {
-        sizeArrow.classList.remove('rotate')
-    }
-}
-
-// Переключает тип сортировки
-function toggleSortType() {
-    setSortType(sortType === fsClient.SortOrder.ASC ? 
-        fsClient.SortOrder.DESC : fsClient.SortOrder.ASC)
-}
-
-function init() {
-    setSortType(DEFAULT_SORT_TYPE)
-}
 
 // Обновляет таблицу списка файлов и директорий
 function loadDirEntities(path) {
@@ -38,7 +10,7 @@ function loadDirEntities(path) {
     dirEntitiesList.innerHTML = ''
     loadingScreen.show(dirEntitiesList)
 
-    return fsClient.fetchDirEntity(path, sortType)
+    return fsClient.fetchDirEntity(path, sort.type())
     .then(response => {
         if (response.entities === null || response.entities.length === 0) {
             showInfoPanel(response.error_message)
@@ -85,13 +57,13 @@ function renderDirEntities(dirEntities) {
 
 // Отключает события обновляющие таблицу
 function disableEventsWhileLoading() {
-    sizeButton.style.pointerEvents = 'none'
+    sort.size.button.style.pointerEvents = 'none'
     dirEntitiesList.style.pointerEvents = 'none'
 }
 
 // Включает события обновляющие таблицу
 function enableEventsAfterLoading() {
-    sizeButton.style.pointerEvents = 'auto'
+    sort.size.button.style.pointerEvents = 'auto'
     dirEntitiesList.style.pointerEvents = 'auto'
 }
 
@@ -101,4 +73,4 @@ function showInfoPanel(message) {
     alert("Инфо панель: " + message)
 }
 
-export default { dirEntitiesList, sizeButton, init, setSortType, toggleSortType, loadDirEntities }
+export default { dirEntitiesList, loadDirEntities }

@@ -16,8 +16,6 @@ function changeRootPath(path) {
 }
 
 function init() {
-    dirTable.init()
-
     initEventListeners()
 
     loadDirEntities()

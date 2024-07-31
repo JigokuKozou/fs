@@ -29,3 +29,4 @@ node_modules
 # Не игнорировать конфигурацию webpack
 !webpack.config.js
 !.babelrc
+web/dist

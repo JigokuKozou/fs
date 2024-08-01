@@ -7,20 +7,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/JigokuKozou/fs/internal/config"
 	fs "github.com/JigokuKozou/fs/internal/filesystem"
 )
-
-// Response - структура, возвращаемая HTTP-сервером.
-type Response struct {
-	RootDir      string         `json:"root_dir"`      // Путь к корневой директории.
-	Entities     []fs.DirEntity `json:"entities"`      // Список сущностей в корневой директории.
-	ErrorCode    int            `json:"error_code"`    // Код ошибки.
-	ErrorMessage string         `json:"error_message"` // Сообщение об ошибке.
-}
 
 var Server *http.Server
 var configServer config.Config
@@ -76,7 +67,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 
 		jsonResponseErr, err := json.Marshal(responseErr)
 		if err != nil {
-			http.Error(w, "внутренняя ошибка сервера", http.StatusInternalServerError)
+			http.Error(w, MessageInteranalError, http.StatusInternalServerError)
 			log.Println(err)
 			return
 		}
@@ -89,27 +80,12 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 
 	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
 	if err != nil {
-		var responseErr = Response{
-			RootDir: rootPath,
-		}
 
-		if errors.Is(err, os.ErrNotExist) {
-			responseErr.ErrorCode = http.StatusNotFound
-			responseErr.ErrorMessage = "Директория не существует"
-		} else if errors.Is(err, os.ErrPermission) {
-			responseErr.ErrorCode = http.StatusForbidden
-			responseErr.ErrorMessage = "Нет доступа к директории"
-		} else if _, ok := err.(fs.ErrUnknownSortType); ok {
-			responseErr.ErrorCode = http.StatusBadRequest
-			responseErr.ErrorMessage = "Неверный тип сортировки"
-		} else {
-			responseErr.ErrorCode = http.StatusInternalServerError
-			responseErr.ErrorMessage = "Внутренняя ошибка сервера"
-		}
+		var responseErr = NewResponse(rootPath, err)
 
 		jsonResponseErr, errJson := json.Marshal(responseErr)
 		if errJson != nil {
-			http.Error(w, "внутренняя ошибка сервера", http.StatusInternalServerError)
+			http.Error(w, MessageInteranalError, http.StatusInternalServerError)
 			log.Println(errJson)
 			return
 		}
@@ -126,7 +102,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		http.Error(w, "Внутренняя ошибка сервера", 500)
+		http.Error(w, MessageInteranalError, http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}

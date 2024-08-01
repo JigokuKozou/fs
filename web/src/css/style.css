@@ -161,7 +161,7 @@ button:active {
     text-align: center;
 }
 
-.no-select {
+.no-select-text {
     -webkit-user-select: none; /* Chrome/Safari */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE/Edge */

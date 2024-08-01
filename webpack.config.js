@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const FileManagerPlugin = require('filemanager-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const srcPath = path.resolve(__dirname, 'web/src');
 const distPath = path.resolve(__dirname, 'web/dist');
@@ -44,13 +44,7 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
     }),
-    new FileManagerPlugin({
-      events: {
-        onStart: {
-          delete: [distPath],
-        },
-      },
-    }),
+    new CleanWebpackPlugin(),
   ],
   devServer: {
     watchFiles: distPath,

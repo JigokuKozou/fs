@@ -1,10 +1,15 @@
 import DirTable from './dir-table'
 
-const DEFAULT_ROOT_PATH = ""
 
+// Класс представляющий файловый менеджер, содержащий все элементы на странице
 export default class FileManager {
+    // Кнопка назад
     public readonly backButton: HTMLElement
+
+    // Поле ввода корневого пути
     public readonly rootPathInput: HTMLInputElement
+    
+    // Таблица содержания директории
     public readonly dirTable: DirTable
 
     constructor() {
@@ -36,6 +41,7 @@ export default class FileManager {
         this.rootPathInput.value = path
     }
 
+    // Инициализирует отслеживание нажатия на секцию содержимого таблицы
     private initEventListeners() {
         // Переход в выбранную директорию и обновление таблицы
         this.dirTable.dirEntitiesList.addEventListener('click', (event: MouseEvent) => {
@@ -59,7 +65,7 @@ export default class FileManager {
         });
     }
 
-    // Обновление таблицы с блокировкой событий обновления
+    // Обновление таблицы с блокировкой событий её обновления
     public loadDirEntities() {
         this.disableEventsWhileLoading()
 

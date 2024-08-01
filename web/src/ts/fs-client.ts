@@ -1,19 +1,21 @@
-
+// Тип сущности
 export enum DirEntityType {
     FILE = 'Файл',
     DIR = 'Дир'
 }
 
+// Тип сортировки
 export enum SortOrder {
     ASC = 'asc',
     DESC = 'desc'
 }
 
+// Класс представляющий ответ сервера
 export class FsClientResponse {
-    public root_dir: string
-    public entities: DirEntity[] | null
-    public error_code: number
-    public error_message: string
+    public root_dir: string                 // Корневой путь
+    public entities: DirEntity[] | null     // Список сущностей
+    public error_code: number               // Код ошибки
+    public error_message: string            // Сообщение ошибки
 
     constructor(root_dir: string, entities: DirEntity[], error_code: number, error_message: string) {
         this.root_dir = root_dir
@@ -23,10 +25,11 @@ export class FsClientResponse {
     }
 }
 
+// Класс представляющий сущность директории (файл/директория)
 export class DirEntity {
-    public type: DirEntityType
-    public name: string
-    public size: string
+    public type: DirEntityType  // Тип (файл/директория)
+    public name: string         // Имя
+    public size: string         // Размер (форматированный)
 
     constructor(type: DirEntityType, name: string, size: string) {
         this.type = type
@@ -35,6 +38,7 @@ export class DirEntity {
     }
 }
 
+// Класс представляющий HTTP-клиент для получения доступа к файловой системе сервера
 export class FsClient {
 
     // Запрос на получение информации о содержимом директории
@@ -46,8 +50,9 @@ export class FsClient {
             }
 
             const jsonBody = await response.json()
+
             // Десериализация JSON ответа в объект FsClientResponse
-            const fsClientResponse = new FsClientResponse(
+            return new FsClientResponse(
                 jsonBody.root_dir,
                 jsonBody.entities?.map((entity: any) => new DirEntity(
                         entity.type, 
@@ -57,7 +62,5 @@ export class FsClient {
                 jsonBody.error_code,
                 jsonBody.error_message
             )
-
-            return fsClientResponse
     }
 }

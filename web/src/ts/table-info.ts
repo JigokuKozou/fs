@@ -1,6 +1,12 @@
+// Класс представляющий информацию внутри секции талицы
 export default class TableInfo {
+    // Секция таблицы в которой необходимо отобразить информацию
     public readonly parent: HTMLTableSectionElement;
+    
+    // Строка таблицы с текстовым элементом
     public readonly element: HTMLTableRowElement;
+
+    // Текстовый элемент в котором отображается информация
     public readonly textContainer: HTMLElement;
 
     public constructor(parent: HTMLTableSectionElement) {
@@ -18,7 +24,7 @@ export default class TableInfo {
         this.textContainer = textContainer;
     }
 
-    // Показать сообщение внутри parent
+    // Показать сообщение внутри parent или изменить текст сообщения
     public show(message: string) {
         this.textContainer.textContent = message;
         

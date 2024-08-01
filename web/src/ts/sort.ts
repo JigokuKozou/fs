@@ -1,5 +1,6 @@
 import { SortOrder } from './fs-client'
 
+// Класс отвечающий за сортировку таблицы
 export default class Sort {
 
     // Кнопка размера и стрелка сортировки

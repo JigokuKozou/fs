@@ -4,11 +4,15 @@ import Sort from './sort'
 
 const LOADING_MESSAGE = 'Загрузка...'
 
+// Класс представляющий таблицу списка файлов и директорий
 export default class DitTable {
     public readonly fsClient: FsClient = new FsClient()
     public readonly sort: Sort = new Sort()
 
+    // Секция таблицы в которой отображаются файлы и директории
     public readonly dirEntitiesList: HTMLTableSectionElement
+
+    // Информационное сообщение внутри dirEntitiesList
     public readonly tableInfo: TableInfo
 
     constructor() {
@@ -43,7 +47,7 @@ export default class DitTable {
         }
     }
 
-    // Creates and appends file and directory rows to the tbody based on the passed array.
+    // Добавляет строки в dirEntitiesList с информацией о директориях и файлах
     private renderDirEntities(dirEntities: DirEntity[]): void {
         dirEntities.forEach((dirEntity: DirEntity) => {
             const row = document.createElement('tr');

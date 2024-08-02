@@ -31,6 +31,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      ALLOWED_HOSTS: http://localhost:${HTTP_SERVER_PORT}
 
   # phpMyAdmin (для управления MySQL базой данных через UI)
   phpmyadmin:

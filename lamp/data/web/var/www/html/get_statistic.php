@@ -1,9 +1,14 @@
 <?php
+require_once 'db_connection.php';
+
+// Добавление доступа клиентскому домену (CORS)
+header('Access-Control-Allow-Origin: ' . $_ENV['ALLOWED_HOSTS']);
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Подготовка SQL запроса для получения данных
-    require_once 'db_connection.php';
     $conn = getDbConnection();
-    $sql = "SELECT dir_path, total_size, load_time_seconds, created_at FROM statistic";
+    $sql = "SELECT dir_path as dirPath, total_size as totalSize, "
+    . "load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
     $result = $conn->query($sql);
     if (!$result) {
         $conn->close();

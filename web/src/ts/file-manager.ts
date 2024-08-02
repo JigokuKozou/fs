@@ -1,4 +1,5 @@
 import DirTable from './dir-table'
+import { StatisticsClient } from './statistics-client'
 
 
 // Класс представляющий файловый менеджер, содержащий все элементы на странице
@@ -6,26 +7,39 @@ export default class FileManager {
     // Кнопка назад
     public readonly backButton: HTMLButtonElement
 
+    // Кнопка статистики
+    public readonly statisticsButton: HTMLElement
+
     // Поле ввода корневого пути
     public readonly rootPathInput: HTMLInputElement
     
     // Таблица содержания директории
     public readonly dirTable: DirTable
 
-    constructor() {
+    // Таблица содержания директории
+    public readonly statisticsClient: StatisticsClient
+
+    constructor(dirTable : DirTable, statisticClient : StatisticsClient) {
+        this.dirTable = dirTable
+        this.statisticsClient = statisticClient
+
         const backButton: HTMLElement | null = document.getElementById('back-button')
         if (!backButton) {
             throw new Error('Элемент #back-button не найден')
         }
         this.backButton = backButton as HTMLButtonElement
+        
+        const statisticsButton: HTMLElement | null = document.getElementById('statistics-button')
+        if (!statisticsButton) {
+            throw new Error('Элемент #statistics-button не найден')
+        }
+        this.statisticsButton = statisticsButton
 
         const rootPathInput: HTMLElement | null = document.getElementById('root-path')
         if (!rootPathInput) {
             throw new Error('Элемент #root-path не найден')
         }
         this.rootPathInput = rootPathInput as HTMLInputElement
-
-        this.dirTable = new DirTable()
 
         this.initEventListeners()
     }
@@ -65,6 +79,12 @@ export default class FileManager {
                     this.LoadDirEntities();
                 }
             }
+        });
+
+        // Получение страницы статистики
+        this.statisticsButton.addEventListener('click', () => {
+            this.statisticsClient.getStatistics()
+            .then(statistics => alert(JSON.stringify(statistics, null, 2)));
         });
     }
 

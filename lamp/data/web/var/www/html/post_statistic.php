@@ -1,4 +1,6 @@
 <?php
+require_once 'db_connection.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Получение данных из POST-запроса
     $postData = file_get_contents('php://input');
@@ -6,13 +8,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Проверка на наличие данных
     if ($data) {
-        require_once 'db_connection.php';
         $conn = getDbConnection();
 
         // Подготовка SQL запроса для вставки в таблицу
-        $sql = "INSERT INTO statistic (dir_path, total_size, load_time_seconds, created_at) VALUES (?, ?, ?, NOW())";
+        $sql = "INSERT INTO statistic (dir_path, total_size, "
+        . "load_time_seconds, created_at) "
+        . "VALUES (?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds']);
+        if (!$stmt) {
+            http_response_code(500);
+            
+            // закрытие соединения с базой данных
+            $conn->close();
+            exit;
+        }
+        
+        if (!$stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds'])) {
+            http_response_code(500);
+
+            // закрытие соединения с базой данных
+            $conn->close();
+            exit;
+        }
 
         // выполнение SQL запроса
         if ($stmt->execute()) {

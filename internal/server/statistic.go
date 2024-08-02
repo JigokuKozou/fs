@@ -43,6 +43,6 @@ func sendStatistics(response Response) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
-		log.Printf("Ошибка отправки статистики: %s %s\n", resp.Status, jsonStatistic)
+		log.Printf("Ошибка отправки статистики[url=%s, статус=%s]\n", resp.Request.URL, resp.Status)
 	}
 }

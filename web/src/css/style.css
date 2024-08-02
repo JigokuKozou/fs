@@ -52,6 +52,10 @@ button:disabled {
     transform: none; /* не смещать кнопку */
 }
 
+#statistics-button {
+    margin-left: 10px;
+}
+
 .selectable {
     cursor: pointer;
     user-select: none;

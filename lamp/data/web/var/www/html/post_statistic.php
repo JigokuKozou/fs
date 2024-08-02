@@ -31,16 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Content-Type: application/json');
         http_response_code(400);
         echo json_encode([
-            'statusCode' => 400,
             'message' => 'Получены не корректные данные'
         ]);
     }
 } else {
     // Ответ в случае использования метода, отличного от POST
     header('Content-Type: application/json');
-    http_response_code(400);
+    http_response_code(405);
     echo json_encode([
-        'statusCode' => 400,
         'message' => 'Только POST-запросы поддерживаются'
     ]);
 }
+?>

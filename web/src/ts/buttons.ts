@@ -8,7 +8,7 @@ export default function initButtonEventListeners(fm: FileManager) {
         splittedRootPath.pop()
         fm.changeRootPath(splittedRootPath.join('/'))
 
-        fm.loadDirEntities()
+        fm.LoadDirEntities()
     })
 
     const sort = fm.dirTable.sort
@@ -16,6 +16,6 @@ export default function initButtonEventListeners(fm: FileManager) {
     sort.size.button.addEventListener('click', function() {
         sort.toggleType()
         
-        fm.loadDirEntities()
+        fm.LoadDirEntities()
     })
 }

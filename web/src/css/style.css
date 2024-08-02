@@ -45,6 +45,12 @@ button:active {
     box-shadow: 0 1px #666;
     transform: translateY(2px);
 }
+button:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: 0 3px #999;  /* исходная тень */
+    transform: none; /* не смещать кнопку */
+}
 
 .selectable {
     cursor: pointer;

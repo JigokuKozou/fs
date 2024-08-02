@@ -4,7 +4,7 @@ import DirTable from './dir-table'
 // Класс представляющий файловый менеджер, содержащий все элементы на странице
 export default class FileManager {
     // Кнопка назад
-    public readonly backButton: HTMLElement
+    public readonly backButton: HTMLButtonElement
 
     // Поле ввода корневого пути
     public readonly rootPathInput: HTMLInputElement
@@ -17,7 +17,7 @@ export default class FileManager {
         if (!backButton) {
             throw new Error('Элемент #back-button не найден')
         }
-        this.backButton = backButton
+        this.backButton = backButton as HTMLButtonElement
 
         const rootPathInput: HTMLElement | null = document.getElementById('root-path')
         if (!rootPathInput) {
@@ -39,6 +39,11 @@ export default class FileManager {
         }
 
         this.rootPathInput.value = path
+        if (path === '/') {
+            this.backButton.disabled = true
+        } else {
+            this.backButton.disabled = false
+        }
     }
 
     // Инициализирует отслеживание нажатия на секцию содержимого таблицы

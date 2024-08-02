@@ -28,8 +28,6 @@ export default class FileManager {
         this.dirTable = new DirTable()
 
         this.initEventListeners()
-
-        this.loadDirEntities()
     }
 
     // Изменяет корневой путь в input
@@ -64,14 +62,14 @@ export default class FileManager {
                         this.changeRootPath(`${this.rootPathInput.value}/${dirName}`);
                     }
 
-                    this.loadDirEntities();
+                    this.LoadDirEntities();
                 }
             }
         });
     }
 
     // Обновление таблицы с блокировкой событий её обновления
-    public loadDirEntities() {
+    public LoadDirEntities() {
         this.disableEventsWhileLoading()
 
         this.dirTable.loadDirEntities(this.rootPathInput.value)

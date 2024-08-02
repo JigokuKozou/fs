@@ -30,3 +30,12 @@ node_modules
 !webpack.config.js
 !.babelrc
 web/dist
+
+# Не игнорировать LAMP
+!lamp/
+!docker-compose*
+lamp/data/db/var/lib/mysql/*
+!lamp/data/db/var/lib/mysql/.gitkeep
+
+# Не игнорировать скрипты
+!*.sh

@@ -23,19 +23,15 @@ const DefaultDirSize = 4 * kiloByte
 
 // DirEntity - представление сущностей(файлов/директорий) директории
 type DirEntity struct {
-	isDir         bool   // Является ли директорией
-	Type          string `json:"type"` // Тип
-	Name          string `json:"name"` // Имя
-	size          int64  // Размер в байтах
-	FormattedSize string `json:"size"` // форматированое для пользователя представление размера
-}
-
-func (d DirEntity) Size() int64 {
-	return d.size
+	IsDir         bool   `json:"isDir"`         // Является ли директорией
+	Type          string `json:"type"`          // Тип
+	Name          string `json:"name"`          // Имя
+	Size          int64  `json:"size"`          // Размер в байтах
+	FormattedSize string `json:"formattedSize"` // Форматированое для пользователя представление размера
 }
 
 func (d *DirEntity) SetSize(size int64) {
-	d.size = size
+	d.Size = size
 	d.FormattedSize = FormattedSize(size)
 }
 

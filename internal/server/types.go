@@ -18,10 +18,11 @@ const (
 
 // Response - структура, возвращаемая HTTP-сервером.
 type Response struct {
-	RootDir      string         `json:"root_dir"`      // Путь к корневой директории.
-	Entities     []fs.DirEntity `json:"entities"`      // Список сущностей в корневой директории.
-	ErrorCode    int            `json:"error_code"`    // Код ошибки.
-	ErrorMessage string         `json:"error_message"` // Сообщение об ошибке.
+	RootDir         string         `json:"rootDir"`         // Путь к корневой директории.
+	Entities        []fs.DirEntity `json:"entities"`        // Список сущностей в корневой директории.
+	LoadTimeSeconds float64        `json:"loadTimeSeconds"` // Время загрузки в секундах.
+	ErrorCode       int            `json:"errorCode"`       // Код ошибки.
+	ErrorMessage    string         `json:"errorMessage"`    // Сообщение об ошибке.
 }
 
 // NewResponse создает новый объект Response.

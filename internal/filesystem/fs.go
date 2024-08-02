@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
-	"time"
 )
 
 // NewDirEntity создает новый DirEntity с указанными свойствами.
@@ -20,10 +19,10 @@ func NewDirEntity(isDir bool, name string, size int64) DirEntity {
 	}
 
 	return DirEntity{
-		isDir:         isDir,
+		IsDir:         isDir,
 		Type:          typeName,
 		Name:          name,
-		size:          size,
+		Size:          size,
 		FormattedSize: FormattedSize(size),
 	}
 }
@@ -31,8 +30,6 @@ func NewDirEntity(isDir bool, name string, size int64) DirEntity {
 // SortedDirEntities получает информацию о сущностях в директории по пути rootPath,
 // сортирует их по заданному sortType и возвращает отсортированную информацию.
 func SortedDirEntities(rootPath string, sortType string) ([]DirEntity, error) {
-	start := time.Now()
-
 	dirEntities, err := RootDirEntities(rootPath)
 	if err != nil {
 		return nil, err
@@ -41,9 +38,6 @@ func SortedDirEntities(rootPath string, sortType string) ([]DirEntity, error) {
 	if err := SortDirEntities(dirEntities, sortType); err != nil {
 		return nil, err
 	}
-
-	end := time.Since(start).Seconds()
-	log.Printf("Время выполнения %.2f сек", end)
 
 	return dirEntities, nil
 }
@@ -69,7 +63,7 @@ func RootDirEntities(rootPath string) ([]DirEntity, error) {
 				fmt.Printf("Не удалось получить информацию о файле [dirEntry=%v]: %s", dirEntry, err)
 
 				dirEntity = NewDirEntity(dirEntry.IsDir(), dirEntry.Name(), 0)
-				if dirEntity.isDir {
+				if dirEntity.IsDir {
 					dirEntity.SetSize(DefaultDirSize)
 				}
 			}
@@ -90,7 +84,7 @@ func mapToDirEntity(dirPath string, dirEntry os.DirEntry) (DirEntity, error) {
 
 	dirEntity := NewDirEntity(info.IsDir(), info.Name(), info.Size())
 
-	if dirEntity.isDir {
+	if dirEntity.IsDir {
 		size, err := CalculateDirSize(dirPath)
 		if err != nil {
 			return DirEntity{}, fmt.Errorf("не удалось вычислить размер директории [dirPath=%s]: %w", dirPath, err)
@@ -139,11 +133,11 @@ func SortDirEntities(rootInfos []DirEntity, sortType string) error {
 	switch sortType {
 	case SortAsc:
 		cmp = func(a, b DirEntity) int {
-			return int(a.size - b.size)
+			return int(a.Size - b.Size)
 		}
 	case SortDesc:
 		cmp = func(a, b DirEntity) int {
-			return int(b.size - a.size)
+			return int(b.Size - a.Size)
 		}
 	default:
 		return ErrUnknownSortType{invalidSortTypeValue: sortType}

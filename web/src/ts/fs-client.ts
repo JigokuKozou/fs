@@ -53,14 +53,14 @@ export class FsClient {
 
             // Десериализация JSON ответа в объект FsClientResponse
             return new FsClientResponse(
-                jsonBody.root_dir,
+                jsonBody.rootDir,
                 jsonBody.entities?.map((entity: any) => new DirEntity(
                         entity.type, 
                         entity.name, 
-                        entity.size
+                        entity.formattedSize
                     )),
-                jsonBody.error_code,
-                jsonBody.error_message
+                jsonBody.errorCode,
+                jsonBody.errorMessage
             )
     }
 }

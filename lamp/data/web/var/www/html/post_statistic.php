@@ -12,11 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Подготовка SQL запроса для вставки в таблицу
         $sql = "INSERT INTO statistic (dir_path, total_size, load_time_seconds, created_at) VALUES (?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sid", $data['dirPath'], $data['size'], $data['loadTimeSeconds']);
+        $stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds']);
 
         // выполнение SQL запроса
-        if ($stmt->execute()) http_response_code(204);
-        else http_response_code(500);
+        if ($stmt->execute()) {
+            http_response_code(204);
+        }
+        else {
+            http_response_code(500);
+        }
         $stmt->close();
         
         // закрытие соединения с базой данных
@@ -25,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Ответ в случае отсутствия данных или ошибки
         header('Content-Type: application/json');
+        http_response_code(400);
         echo json_encode([
             'statusCode' => 400,
             'message' => 'Получены не корректные данные'
@@ -33,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     // Ответ в случае использования метода, отличного от POST
     header('Content-Type: application/json');
+    http_response_code(400);
     echo json_encode([
         'statusCode' => 400,
         'message' => 'Только POST-запросы поддерживаются'

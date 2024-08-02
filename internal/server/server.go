@@ -55,6 +55,8 @@ func Shutdown(ctx context.Context, timeout time.Duration) error {
 
 // fsHandler обрабатывает HTTP-запросы для получения информации о содержимом директории.
 func fsHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
 	// Устанавливаем заголовок ответа, указывая, что содержимое будет в формате JSON
 	w.Header().Set("Content-Type", "application/json")
 
@@ -96,9 +98,13 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	end := time.Since(start).Seconds()
+	log.Printf("Время выполнения %.2f сек", end)
+
 	response := Response{
-		RootDir:  rootPath,
-		Entities: rootDirEntities,
+		RootDir:         rootPath,
+		Entities:        rootDirEntities,
+		LoadTimeSeconds: end,
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -107,6 +113,8 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(jsonResponse)
+
+	sendStatistics(response)
 }
 
 // getRequestParams извлекает параметры "root" и "sort" из URL запроса.

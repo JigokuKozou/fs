@@ -5,33 +5,44 @@ require_once 'db_connection.php';
 header('Access-Control-Allow-Origin: ' . $_ENV['ALLOWED_HOSTS']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Подготовка SQL запроса для получения данных
-    $conn = getDbConnection();
-    $sql = "SELECT dir_path as dirPath, total_size as totalSize, "
-    . "load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
-    $result = $conn->query($sql);
-    if (!$result) {
-        $conn->close();
-        http_response_code(500);
-        exit;
-    }
+    try {
+        // Подготовка SQL запроса для получения данных
+        $conn = getDbConnection();
 
-    $data = [];
-    // Проверка наличия строк в результате запроса
-    if ($result->num_rows > 0) {
-        // Извлечение строк из результата запроса
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row;
+        $sql = "SELECT dir_path as dirPath, total_size as totalSize, "
+            . "load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
+        $result = $conn->query($sql);
+        if (!$result) {
+            throw new Exception('Ошибка выполнения SQL запроса: ' . $conn->error, 500);
         }
+
+        try {
+            $data = [];
+            // Проверка наличия строк в результате запроса
+            if ($result->num_rows > 0) {
+                // Извлечение строк из результата запроса
+                while ($row = $result->fetch_assoc()) {
+                    $data[] = $row;
+                }
+            }
+        } finally {
+            // Освобождение ресурсов, связанных с SQL запросом
+            $result->free();
+        }
+
+        header('Content-Type: application/json');
+        http_response_code(200);
+        echo json_encode($data);
+    } catch (Throwable $th) {
+        header('Content-Type: application/json');
+        http_response_code($th->getCode());
+        echo json_encode([
+            'message' => $th->getMessage()
+        ]);
+    } finally {
+        // Закрытие соединения с базой данных
+        $conn->close();
     }
-    // Освобождение ресурсов, связанных с результатом
-    $result->free();
-    // Закрытие соединения с базой данных
-    $conn->close();
-    
-    header('Content-Type: application/json');
-    http_response_code(200);
-    echo json_encode($data);
 } else {
     // Ответ в случае использования метода, отличного от GET
     header('Content-Type: application/json');
@@ -40,4 +51,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'message' => 'Только GET-запросы поддерживаются'
     ]);
 }
-?>

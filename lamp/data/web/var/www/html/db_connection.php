@@ -10,7 +10,7 @@ function getDbConnection() {
     
     // Проверка соединения
     if ($conn->connect_error) {
-        die("Подключение не удалось: " . $conn->connect_error);
+        throw new Exception("Подключение не удалось: " . $conn->connect_error);
     }
     
     return $conn;

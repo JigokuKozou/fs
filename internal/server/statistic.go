@@ -38,7 +38,7 @@ func sendStatistics(response Response) {
 
 	resp, err := http.Post(urlStatisticServer, "application/json", bytes.NewBuffer(jsonStatistic))
 	if err != nil {
-		log.Println(err)
+		log.Printf("Ошибка отправки статистики[url=%s]: %s", resp.Request.URL, err)
 		return
 	}
 	defer resp.Body.Close()

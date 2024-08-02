@@ -10,19 +10,19 @@ import (
 	"time"
 
 	"github.com/JigokuKozou/fs/internal/config"
-	fs "github.com/JigokuKozou/fs/internal/filesystem"
+	"github.com/JigokuKozou/fs/internal/filesystem"
 )
 
 var Server *http.Server
 var configServer config.Config
 
 // Run запускает HTTP-сервер.
-func Run() {
+func Run() error {
 
 	var err error
 	configServer, err = config.GetConfig()
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("не удалось получить конфигурацию сервера: %w", err)
 	}
 
 	Server = &http.Server{
@@ -36,8 +36,10 @@ func Run() {
 
 	fmt.Printf("Запуск сервера на http://localhost:%s ...\n", configServer.ServerPort)
 	if err = Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalln(err)
+		return fmt.Errorf("не удалось запустить HTTP-сервер: %w", err)
 	}
+
+	return nil
 }
 
 // Shutdown останавливает HTTP-сервер. Возвращает ошибку метода http.Server.Shutdown.
@@ -78,7 +80,7 @@ func fsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootDirEntities, err := fs.SortedDirEntities(rootPath, sortType)
+	rootDirEntities, err := filesystem.SortedDirEntities(rootPath, sortType)
 	if err != nil {
 
 		var responseErr = NewResponse(rootPath, err)

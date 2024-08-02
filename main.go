@@ -11,6 +11,9 @@ import (
 	"github.com/JigokuKozou/fs/internal/server"
 )
 
+// ServerTimeoutDuration - время ожидания завершения работы HTTP-сервера
+const ServerTimeoutDuration = 10 * time.Second
+
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -18,7 +21,11 @@ func main() {
 		}
 	}()
 
-	go server.Run()
+	go func() {
+		if err := server.Run(); err != nil {
+			log.Fatalf("Не удалось запустить HTTP-сервер: %v", err)
+		}
+	}()
 
 	// Канал для ожидания сигналов завершения работы
 	stop := make(chan os.Signal, 1)
@@ -28,7 +35,7 @@ func main() {
 	log.Print("Получен сигнал остановки сервера. Завершение работы...")
 
 	// Завершение работы сервера
-	if err := server.Shutdown(context.Background(), 5*time.Second); err != nil {
+	if err := server.Shutdown(context.Background(), ServerTimeoutDuration); err != nil {
 		log.Fatalf("Не удалось корректно завершить работу сервера: %v", err)
 	}
 

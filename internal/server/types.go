@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	fs "github.com/JigokuKozou/fs/internal/filesystem"
+	"github.com/JigokuKozou/fs/internal/filesystem"
 )
 
 // Сообщения ошибки
@@ -18,10 +18,10 @@ const (
 
 // Response - структура, возвращаемая HTTP-сервером.
 type Response struct {
-	RootDir      string         `json:"root_dir"`      // Путь к корневой директории.
-	Entities     []fs.DirEntity `json:"entities"`      // Список сущностей в корневой директории.
-	ErrorCode    int            `json:"error_code"`    // Код ошибки.
-	ErrorMessage string         `json:"error_message"` // Сообщение об ошибке.
+	RootDir      string                 `json:"root_dir"`      // Путь к корневой директории.
+	Entities     []filesystem.DirEntity `json:"entities"`      // Список сущностей в корневой директории.
+	ErrorCode    int                    `json:"error_code"`    // Код ошибки.
+	ErrorMessage string                 `json:"error_message"` // Сообщение об ошибке.
 }
 
 // NewResponse создает новый объект Response.
@@ -37,7 +37,7 @@ func NewResponse(rootPath string, err error) Response {
 	} else if errors.Is(err, os.ErrPermission) {
 		responseErr.ErrorCode = http.StatusForbidden
 		responseErr.ErrorMessage = MessagePermissionDenied
-	} else if _, ok := err.(fs.ErrUnknownSortType); ok {
+	} else if _, ok := err.(filesystem.ErrUnknownSortType); ok {
 		responseErr.ErrorCode = http.StatusBadRequest
 		responseErr.ErrorMessage = MessageUnknownSortType
 	} else {

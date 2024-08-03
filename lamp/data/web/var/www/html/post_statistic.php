@@ -16,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Подготовка SQL запроса для вставки в таблицу
         $sql = "INSERT INTO statistic (dir_path, total_size, "
-        . "load_time_seconds, created_at) "
-        . "VALUES (?, ?, ?, NOW())";
-        
+            . "load_time_seconds, created_at) "
+            . "VALUES (?, ?, ?, NOW())";
+
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             throw new Exception('Ошибка подготовки SQL запроса', 500);
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds'])) {
                 throw new Exception('Ошибка привязки параметров SQL запроса', 500);
             }
-    
+
             // выполнение SQL запроса
             if (!$stmt->execute()) {
                 throw new Exception('Ошибка выполнения SQL запроса', 500);
@@ -40,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Освобождение ресурсов, связанных с SQL запросом
             $stmt->close();
         }
-        
     } catch (Throwable $th) {
         // Ответ в случае ошибки
         http_response_code($th->getCode());
@@ -50,7 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
     } finally {
         // Закрытие соединения с базой данных
-        $conn->close();
+        if ($conn) {
+            $conn->close();
+        }
     }
 } else {
     // Ответ в случае использования метода, отличного от POST
@@ -60,4 +61,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'message' => 'Только POST-запросы поддерживаются'
     ]);
 }
-?>

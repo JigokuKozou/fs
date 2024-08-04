@@ -1,5 +1,5 @@
 import DirTable from './dir-table'
-import { StatisticsClient } from './statistics-client'
+import { ConfigStatistics } from './config-statistics'
 
 
 // Класс представляющий файловый менеджер, содержащий все элементы на странице
@@ -17,11 +17,11 @@ export default class FileManager {
     public readonly dirTable: DirTable
 
     // Таблица содержания директории
-    public readonly statisticsClient: StatisticsClient
+    public readonly configStatistics: ConfigStatistics
 
-    constructor(dirTable : DirTable, statisticClient : StatisticsClient) {
+    constructor(dirTable : DirTable, configStatistics : ConfigStatistics) {
         this.dirTable = dirTable
-        this.statisticsClient = statisticClient
+        this.configStatistics = configStatistics
 
         const backButton: HTMLElement | null = document.getElementById('back-button')
         if (!backButton) {
@@ -83,8 +83,7 @@ export default class FileManager {
 
         // Получение страницы статистики
         this.statisticsButton.addEventListener('click', () => {
-            this.statisticsClient.getStatistics()
-            .then(statistics => alert(JSON.stringify(statistics, null, 2)));
+            window.open(this.configStatistics.getStatisticsServerUrl(), 'statistics');
         });
     }
 

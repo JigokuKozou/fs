@@ -16,12 +16,13 @@ services:
 
   # Apache и PHP
   web:
-    build: lamp/php
+    build: ./lamp/php
     container_name: apache_php
     ports:
       - "${APACHE_PORT}:80"
     volumes:
-      - ./lamp/data/web/var/www/html:/var/www/html
+      - ./lamp/data/web/var/www/html:/var/www/html                            # Каталог с скриптами
+      - ./lamp/data/web/usr/local/etc/php/php.ini:/usr/local/etc/php/php.ini  # Конфигурация php.ini
     networks:
       - lamp_network
     depends_on:

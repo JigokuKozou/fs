@@ -59,63 +59,15 @@ function tableDataToChartJson($tableData)
 
 function buildHtml($tableData)
 {
-    $html = '<!DOCTYPE html>';
-    $html .= '<html lang="ru">';
-    $html .= '<head>';
-    $html .= '<meta charset="UTF-8">';
-    $html .= '<title>Статистика сканирования</title>';
-    $html .= getStyles();
-    $html .= '</head>';
-    $html .= '<body>';
-    $html .= '<canvas id="statChart"></canvas>
-            <h1>Статистика сканирования</h1>';
-    $html .= buildTable($tableData);
-    $html .= '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
-    $html .= '<script>
-            const data = ' . tableDataToChartJson($tableData) . ';
-            const totalSizes = data.map(item => item.totalSize);
-            const loadTimes = data.map(item => item.loadTimeSeconds);
+    // Загрузка шаблона
+    $htmlTemplate = file_get_contents('get_statistic_template.html');
 
-            Chart.defaults.font.size = 16;
-            const chartData = {
-                datasets: [{
-                    label: "Время загрузки (сек)",
-                    data: totalSizes.map((size, index) => ({ x: size, y: loadTimes[index] })),
-                    backgroundColor: "rgba(75, 192, 192, 0.3)",
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    borderWidth: 1
-                }]
-            };
+    // Подстановка данных в шаблон
+    $chartJsonData = tableDataToChartJson($tableData);
+    $tableHtml = buildTable($tableData);
 
-            const config = {
-                type: "line",
-                data: chartData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: "Размер директории (байты)"
-                            },
-                            type: "logarithmic"
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: "Время загрузки (секунды)"
-                            }
-                        }
-                    }
-                }
-            };
-
-            const ctx = document.getElementById("statChart").getContext("2d");
-            const myChart = new Chart(ctx, config);
-            </script>';
-
-    $html .= '</body>';
-    $html .= '</html>';
+    $html = str_replace('<!-- TABLE_PLACEHOLDER -->', $tableHtml, $htmlTemplate);
+    $html = str_replace('CHART_JSON_PLACEHOLDER', $chartJsonData, $html);
 
     return $html;
 }
@@ -172,7 +124,7 @@ function getStyles()
         th, td {
             border: 1px solid #ddd;
             padding: 4px;
-            text-align: right;
+            text-align: center;
         }
         th {
             background-color: #f2f2f2;

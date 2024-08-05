@@ -70,7 +70,8 @@ function buildHtml($tableData, $chartJsonData)
             const labels = data.map(item => item.dirPath);
             const totalSizes = data.map(item => item.totalSize);
             const loadTimes = data.map(item => item.loadTimeSeconds);
-
+            
+            Chart.defaults.font.size = 16;
             const myChart = new Chart(ctx, {
                 type: "scatter",
                 data: {

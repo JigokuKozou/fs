@@ -7,8 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $conn = getDbConnection();
 
-        $sql = "SELECT dir_path as dirPath, total_size as totalSize, 
-                load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
+        $sql = "SELECT dir_path as dirPath, total_size as totalSize,"
+                . " load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
                 
         try {
             $result = $conn->query($sql);
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     // Форматирование размера в читаемый формат
-                    $row['totalSize'] = format_size($row['totalSize']);
+                    $row['totalSize'] = formatSize($row['totalSize']);
                     $data[] = $row;
                 }
             }
@@ -36,10 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Статистика сканирования</title>'
-            . get_styles() . 
+            . getStyles() .
         '</head>
         <body>
-            <h1>Статистика сканирования</h1>' . build_table($data) . '</body></html>';
+            <h1>Статистика сканирования</h1>' . buildTable($data) . '</body></html>';
     } catch (Throwable $th) {
         header('Content-Type: application/json');
         http_response_code($th->getCode() ?: 500);
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     ]);
 }
 
-function build_table($array){
+function buildTable($array){
     $html = '<table>';
     $html .= '<tr>';
     $html .= '<th>Путь к директории</th>';
@@ -80,7 +80,7 @@ function build_table($array){
     return $html;
 }
 
-function format_size($size) {
+function formatSize($size) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $unit = 0;
     while ($size >= 1024 && $unit < count($units) - 1) {
@@ -90,7 +90,7 @@ function format_size($size) {
     return round($size, 2) . ' ' . $units[$unit];
 }
 
-function get_styles() {
+function getStyles() {
     return '
     <style>
         body {

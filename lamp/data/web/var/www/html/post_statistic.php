@@ -25,21 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Привязка параметров SQL запроса
-        try {
-            if (!$stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds'])) {
-                throw new Exception('Ошибка привязки параметров SQL запроса', 500);
-            }
-
-            // выполнение SQL запроса
-            if (!$stmt->execute()) {
-                throw new Exception('Ошибка выполнения SQL запроса', 500);
-            }
-
-            http_response_code(204);
-        } finally {
-            // Освобождение ресурсов, связанных с SQL запросом
-            $stmt->close();
+        if (!$stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds'])) {
+            throw new Exception('Ошибка привязки параметров SQL запроса', 500);
         }
+
+        // выполнение SQL запроса
+        if (!$stmt->execute()) {
+            throw new Exception('Ошибка выполнения SQL запроса', 500);
+        }
+
+        http_response_code(204);
     } catch (Throwable $th) {
         // Ответ в случае ошибки
         http_response_code($th->getCode());
@@ -48,6 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => $th->getMessage()
         ]);
     } finally {
+        // Освобождение ресурсов, связанных с SQL запросом
+        if ($stmt) {
+            $stmt->close();
+        }
         // Закрытие соединения с базой данных
         if ($conn) {
             $conn->close();

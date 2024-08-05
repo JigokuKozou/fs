@@ -8,28 +8,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $conn = getDbConnection();
 
         $sql = "SELECT dir_path as dirPath, total_size as totalSize,"
-                . " load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
-                
-        try {
-            $result = $conn->query($sql);
-            if (!$result) {
-                throw new Exception('Ошибка выполнения SQL запроса: ' . $conn->error, 500);
-            }
-    
-            $data = [];
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    // Форматирование размера в читаемый формат
-                    $row['totalSize'] = formatSize($row['totalSize']);
-                    $data[] = $row;
-                }
-            }
-        } finally {
-            if ($result) {
-                $result->free();
+            . " load_time_seconds as loadTimeSeconds, created_at as createdAt FROM statistic";
+
+        $result = $conn->query($sql);
+        if (!$result) {
+            throw new Exception('Ошибка выполнения SQL запроса: ' . $conn->error, 500);
+        }
+
+        $data = [];
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $data[] = $row;
             }
         }
-        
+
         echo '<!DOCTYPE html>
         <html lang="ru">
         <head>
@@ -37,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Статистика сканирования</title>'
             . getStyles() .
-        '</head>
+            '</head>
         <body>
             <h1>Статистика сканирования</h1>' . buildTable($data) . '</body></html>';
     } catch (Throwable $th) {
@@ -47,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'message' => $th->getMessage()
         ]);
     } finally {
+        if ($result) {
+            $result->free();
+        }
         if ($conn) {
             $conn->close();
         }
@@ -59,7 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     ]);
 }
 
-function buildTable($array){
+function buildTable($array)
+{
     $html = '<table>';
     $html .= '<tr>';
     $html .= '<th>Путь к директории</th>';
@@ -81,19 +77,8 @@ function buildTable($array){
 }
 
 
-function formatSize($size) {
-    $base = 1000;
-    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    $unit = 0;
-    while ($size >= $base && $unit < count($units) - 1) {
-        $size /= $base;
-        $unit++;
-    }
-    return round($size, 2) . ' ' . $units[$unit];
-}
-
-
-function getStyles() {
+function getStyles()
+{
     return '
     <style>
         body {
@@ -131,4 +116,3 @@ function getStyles() {
         }
     </style>';
 }
-?>

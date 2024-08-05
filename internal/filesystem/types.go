@@ -13,7 +13,7 @@ const (
 )
 
 // base - основа для конвертации размера в байтах в другие единицы измерения (например, килобайты, мегабайты и т.д.).
-const base = 1024
+const base = 1000
 const kiloByte = base
 const megaByte = base * kiloByte
 const gigaByte = base * megaByte

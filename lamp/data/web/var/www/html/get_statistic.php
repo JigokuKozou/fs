@@ -80,15 +80,18 @@ function buildTable($array){
     return $html;
 }
 
+
 function formatSize($size) {
+    $base = 1000;
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $unit = 0;
-    while ($size >= 1024 && $unit < count($units) - 1) {
-        $size /= 1024;
+    while ($size >= $base && $unit < count($units) - 1) {
+        $size /= $base;
         $unit++;
     }
     return round($size, 2) . ' ' . $units[$unit];
 }
+
 
 function getStyles() {
     return '

@@ -152,17 +152,17 @@ func SortDirEntities(rootInfos []DirEntity, sortType string) error {
 // Например, 1500 байт будет преобразовано в "1Kb".
 func FormattedSize(bytes int64) string {
 	if bytes > teraByte {
-		return fmt.Sprintf("%.2f Tb", float64(bytes)/float64(teraByte))
+		return fmt.Sprintf("%.2f TB", float64(bytes)/float64(teraByte))
 	}
 	if bytes > gigaByte {
-		return fmt.Sprintf("%.2f Gb", float64(bytes)/float64(gigaByte))
+		return fmt.Sprintf("%.2f GB", float64(bytes)/float64(gigaByte))
 	}
 	if bytes > megaByte {
-		return fmt.Sprintf("%.2f Mb", float64(bytes)/float64(megaByte))
+		return fmt.Sprintf("%.2f MB", float64(bytes)/float64(megaByte))
 	}
 	if bytes > kiloByte {
-		return fmt.Sprintf("%.2f Kb", float64(bytes)/float64(kiloByte))
+		return fmt.Sprintf("%.2f KB", float64(bytes)/float64(kiloByte))
 	}
 
-	return fmt.Sprintf("%d b", bytes)
+	return fmt.Sprintf("%d B", bytes)
 }

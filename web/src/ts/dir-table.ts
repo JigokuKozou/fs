@@ -33,7 +33,6 @@ export default class DitTable {
 
         try {
             const response = await this.fsClient.fetchDirEntity(path, this.sort.getType())
-            console.log(response)
             if (response.entities == null || response.entities.length === 0) {
                 this.tableInfo.show(response.error_message)
                 return response

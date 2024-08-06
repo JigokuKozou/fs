@@ -1,4 +1,4 @@
-import { FsClient, DirEntityType, FsClientResponse, DirEntity } from './fs-client'
+import { FsClient, DirEntityType, FsClientResponse, DirEntity } from './model'
 import TableInfo from './table-info'
 import Sort from './sort'
 

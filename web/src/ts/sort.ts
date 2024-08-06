@@ -1,4 +1,4 @@
-import { SortOrder } from './fs-client'
+import { SortOrder } from './model'
 
 // Класс отвечающий за сортировку таблицы
 export default class Sort {

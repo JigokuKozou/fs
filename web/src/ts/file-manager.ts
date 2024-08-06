@@ -1,5 +1,5 @@
 import DirTable from './dir-table'
-import { ConfigStatistics } from './config-statistics'
+import { ConfigStatistics } from './model'
 
 
 // Класс представляющий файловый менеджер, содержащий все элементы на странице

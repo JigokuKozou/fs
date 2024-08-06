@@ -1,11 +1,11 @@
 import FileManager from './file-manager'
-import DitTable from './dir-table'
-import { ConfigStatistics } from './config-statistics'
+import DirTable from './dir-table'
+import { ConfigStatistics } from './model'
 import initButtonEventListeners from './buttons'
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    const dirTable = new DitTable()
+    const dirTable = new DirTable()
     const configStatistics = new ConfigStatistics()
 
     // Запускаем файловый менеджер

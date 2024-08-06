@@ -71,13 +71,14 @@
             this.window.location.href = FRONTEND_URL; // FRONTEND URL
         })
         const data = CHART_JSON_PLACEHOLDER; // CHART JSON PLACEHOLDER
+        const dirPaths = data.map(item => item.dirPath);
         const totalSizes = data.map(item => item.totalSize);
         const loadTimes = data.map(item => item.loadTimeSeconds);
         Chart.defaults.font.size = 16;
         const chartData = {
             datasets: [{
                 label: "Время загрузки (сек)",
-                data: totalSizes.map((size, index) => ({ x: size, y: loadTimes[index] })),
+                data: totalSizes.map((size, index) => ({ x: size, y: loadTimes[index], dirPath: dirPaths[index] })),
                 borderWidth: 1
             }]
         };
@@ -101,6 +102,26 @@
                             text: "Время загрузки (секунды)"
                         },
                         type: "logarithmic"
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        // Изменение подписей в tooltip (подсказка точки)
+                        callbacks: {
+                            title: function(context) {
+                                let title = context[0].raw.dirPath || 'Без метки';
+                                title += '\nРазмер: ' + context[0].parsed.x.toLocaleString() + ' байт';
+                                return title;
+                            },
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += `${context.parsed.y}`;
+                                return label;
+                            }
+                        }
                     }
                 }
             }

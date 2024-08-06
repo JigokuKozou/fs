@@ -5,8 +5,8 @@ const webpack = require('webpack');
 const dotenv = require('dotenv');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-const srcPath = path.resolve(__dirname, 'web/src');
-const distPath = path.resolve(__dirname, 'web/dist');
+const srcPath = path.resolve(__dirname, 'web', 'src');
+const distPath = path.resolve(__dirname, 'web', 'dist');
 
 // Объект ключ - значение из файла .env
 const env = dotenv.config().parsed;

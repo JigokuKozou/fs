@@ -93,7 +93,10 @@ export default class FileManager {
 
         this.dirTable.loadDirEntities(this.rootPathInput.value)
             .then(response => this.changeRootPath(response.root_dir))
-            .catch(err => alert(err))
+            .catch(err => {
+                this.dirTable.tableInfo.show("Ошибка обновления таблицы")
+                console.error(err)
+            })
             .finally(() => this.enableEventsAfterLoading())
     }
 

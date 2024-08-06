@@ -44,9 +44,10 @@ export class FsClient {
     // Запрос на получение информации о содержимом директории
     public async fetchDirEntity(rootPath: string, sortType: SortOrder): Promise<FsClientResponse> {
         const url = `/fs?root=${encodeURIComponent(rootPath)}&sort=${encodeURIComponent(sortType)}`;
-        const response = await fetch(url, { method: "GET" })
+        try {
+            const response = await fetch(url, { method: "GET" })
             if (response.status === 500) {
-                throw new Error("Внутренняя ошибка сервера")
+                throw new Error("Статус ответа сервера: 500 Internal Server Error")
             }
 
             const jsonBody = await response.json()
@@ -55,13 +56,16 @@ export class FsClient {
             return new FsClientResponse(
                 jsonBody.rootDir,
                 jsonBody.entities?.map((entity: any) => new DirEntity(
-                        entity.type, 
-                        entity.name, 
-                        entity.formattedSize
-                    )),
+                    entity.type,
+                    entity.name,
+                    entity.formattedSize
+                )),
                 jsonBody.errorCode,
                 jsonBody.errorMessage
             )
+        } catch (error: any) {
+            throw new Error(`Ошибка при получении информации о содержимом директории: ${error.message}`)
+        }
     }
 }
 
@@ -71,7 +75,7 @@ export class ConfigStatistics {
     public readonly host: string = process.env.APACHE_HOST ?? 'localhost';
     public readonly port: string = process.env.APACHE_PORT ?? '80';
     public readonly getStat: string = process.env.APACHE_PATH_GET_STAT ?? '';
-    
+
     // Получить URL сервера для получения статистики
     public getStatisticsServerUrl(): string {
         return `http://${this.host}:${this.port}/${this.getStat}`;

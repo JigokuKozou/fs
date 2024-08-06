@@ -41,6 +41,8 @@ export default class DitTable {
 
             this.tableInfo.hide()
             return response
+        } catch (error: any) {
+            throw new Error(`Ошибка при обновлении таблицы: ${error.message}`)
         } finally {
             this.enableEventsAfterLoading()
         }

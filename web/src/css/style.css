@@ -133,6 +133,9 @@ button:disabled {
     border-bottom: 2px solid var(--main-text-color);
     cursor: default;
 }
+tr td:first-child {
+    text-align: center;
+}
 
 .dir_table td {
     border-bottom: 1px solid var(--main-text-color);

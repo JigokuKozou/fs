@@ -32,11 +32,6 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
-        test: /\.js$/,
-        use: ['babel-loader'],
-        exclude: /node_modules/,
-      },
-      {
         test: /\.css$/,
         use: [
           MiniCssExtractPlugin.loader,

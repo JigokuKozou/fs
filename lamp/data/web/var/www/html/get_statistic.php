@@ -1,7 +1,7 @@
 <?php
 require_once 'db_connection.php';
 
-header('Access-Control-Allow-Origin: ' . htmlspecialchars($_ENV['ALLOWED_HOSTS']));
+header('Access-Control-Allow-Origin: ' . htmlspecialchars($_ENV['FRONTEND_URL']));
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
@@ -68,6 +68,7 @@ function buildHtml($tableData)
 
     $html = str_replace('<!-- TABLE_PLACEHOLDER -->', $tableHtml, $htmlTemplate);
     $html = str_replace('CHART_JSON_PLACEHOLDER', $chartJsonData, $html);
+    $html = str_replace('FRONTEND_URL', '"'.$_ENV['FRONTEND_URL'].'"', $html);
 
     return $html;
 }

@@ -7,14 +7,15 @@
     <title>Статистика сканирования</title>
     <style>
         body {
+            box-sizing: border-box;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
             padding: 0;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
         }
 
         table {
@@ -30,31 +31,48 @@
         td {
             border: 1px solid #ddd;
             padding: 4px;
-            text-align: right;
+            text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         tr:nth-child(even) {
             background-color: #FBCEB1;
         }
 
         #statChart {
-            margin: 5px 5px 0 5px;
+            margin: 0 5px 0 5px;
+            /* 10px и 30px - отступ и высота кнопки 5px - отступ графика снизу */
+            max-height: calc(100vh - 10px - 30px - 5px);
+        }
+
+        #backButton {
+            margin: 10px 0 0 40px;
+            height: 30px;
+            align-self: flex-start;
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
-    <canvas id="statChart" style="margin: 5px 5px 0 5px;"></canvas>
+    <button id="backButton">Назад</button>
+    <canvas id="statChart"></canvas>
     <h1>Статистика сканирования</h1>
     <!-- TABLE_PLACEHOLDER -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        document.getElementById("backButton").addEventListener("click", () => {
+            this.window.location.href = FRONTEND_URL; // FRONTEND URL
+        })
         const data = CHART_JSON_PLACEHOLDER; // CHART JSON PLACEHOLDER
         const totalSizes = data.map(item => item.totalSize);
         const loadTimes = data.map(item => item.loadTimeSeconds);
-
         Chart.defaults.font.size = 16;
         const chartData = {
             datasets: [{
@@ -81,7 +99,8 @@
                         title: {
                             display: true,
                             text: "Время загрузки (секунды)"
-                        }
+                        },
+                        type: "logarithmic"
                     }
                 }
             }

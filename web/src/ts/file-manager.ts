@@ -83,7 +83,7 @@ export default class FileManager {
 
         // Получение страницы статистики
         this.statisticsButton.addEventListener('click', () => {
-            window.open(this.configStatistics.getStatisticsServerUrl(), 'statistics');
+            window.location.href = this.configStatistics.getStatisticsServerUrl();
         });
     }
 

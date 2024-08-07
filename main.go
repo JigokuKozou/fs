@@ -21,15 +21,16 @@ func main() {
 		}
 	}()
 
+	// Канал для ожидания сигналов завершения работы
+	signals := []os.Signal{os.Interrupt, syscall.SIGTERM, syscall.SIGTSTP, syscall.SIGQUIT}
+	stop := make(chan os.Signal, len(signals))
+	signal.Notify(stop, signals...)
+
 	go func() {
 		if err := server.Run(); err != nil {
 			log.Fatalf("Не удалось запустить HTTP-сервер: %v", err)
 		}
 	}()
-
-	// Канал для ожидания сигналов завершения работы
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGTSTP, syscall.SIGQUIT)
 
 	<-stop
 	log.Print("Получен сигнал остановки сервера. Завершение работы...")

@@ -1,0 +1,45 @@
+services:
+  # MySQL Database
+  db:
+    image: mysql:5.7
+    container_name: mysql_db
+    env_file: ../.env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - lamp_network
+
+  # Apache и PHP
+  web:
+    build: ./php
+    container_name: apache_php
+    env_file: ../.env
+    ports:
+      - "${APACHE_PORT}:80"
+    volumes:
+      - ./php/var/www/html:/var/www/html                            # Каталог с скриптами
+      - ./php/usr/local/etc/php/php.ini:/usr/local/etc/php/php.ini  # Конфигурация php.ini
+    networks:
+      - lamp_network
+    depends_on:
+      - db
+
+  # phpMyAdmin (для управления MySQL базой данных через UI)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    env_file: ../.env
+    ports:
+      - "${PMA_PORT}:80"
+    networks:
+      - lamp_network
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
+
+networks:
+  lamp_network:
+    driver: bridge

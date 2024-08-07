@@ -1,7 +1,14 @@
 <?php
 require_once 'db_connection.php';
 
-header('Access-Control-Allow-Origin: ' . htmlspecialchars($_ENV['FRONTEND_URL']));
+// Получение значений переменных окружения с указанием значений по умолчанию
+$host = getenv('HTTP_SERVER_HOST') ?: 'localhost';
+$port = getenv('HTTP_SERVER_PORT') ?: '80';
+
+// Формирование URL
+$FRONTEND_URL = 'http://' . $host . ':' . $port;
+
+header('Access-Control-Allow-Origin: ' . htmlspecialchars($FRONTEND_URL));
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
@@ -59,6 +66,8 @@ function tableDataToChartJson($tableData)
 
 function buildHtml($tableData)
 {
+    global $FRONTEND_URL;
+
     // Загрузка шаблона
     $htmlTemplate = file_get_contents('get_statistic_template.html');
 
@@ -68,7 +77,7 @@ function buildHtml($tableData)
 
     $html = str_replace('<!-- TABLE_PLACEHOLDER -->', $tableHtml, $htmlTemplate);
     $html = str_replace('CHART_JSON_PLACEHOLDER', $chartJsonData, $html);
-    $html = str_replace('FRONTEND_URL', '"'.$_ENV['FRONTEND_URL'].'"', $html);
+    $html = str_replace('FRONTEND_URL', '"'.$FRONTEND_URL.'"', $html);
 
     return $html;
 }

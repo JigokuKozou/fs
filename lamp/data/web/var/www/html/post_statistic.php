@@ -19,18 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             . "load_time_seconds, created_at) "
             . "VALUES (?, ?, ?, NOW())";
 
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) {
+        $statement = $conn->prepare($sql);
+        if (!$statement) {
             throw new Exception('Ошибка подготовки SQL запроса', 500);
         }
 
         // Привязка параметров SQL запроса
-        if (!$stmt->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds'])) {
+        if (!$statement->bind_param("sid", $data['dirPath'], $data['totalSize'], $data['loadTimeSeconds'])) {
             throw new Exception('Ошибка привязки параметров SQL запроса', 500);
         }
 
         // выполнение SQL запроса
-        if (!$stmt->execute()) {
+        if (!$statement->execute()) {
             throw new Exception('Ошибка выполнения SQL запроса', 500);
         }
 
@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
     } finally {
         // Освобождение ресурсов, связанных с SQL запросом
-        if ($stmt) {
-            $stmt->close();
+        if ($statement) {
+            $statement->close();
         }
         // Закрытие соединения с базой данных
         if ($conn) {

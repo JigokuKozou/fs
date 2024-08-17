@@ -1,9 +1,9 @@
 import * as styles from './Table.module'
 import {DirEntity, DirEntityType, SortOrder} from '../../model'
 import React, {useEffect, useState} from "react";
-import {pathSeparator} from "../../App";
 import HeadCell from "../UI/table/cell/HeadCell/HeadCell";
 import BodyCell from '../UI/table/cell/BodyCell/BodyCell';
+import {buildAbsolutePath} from "../../path";
 
 const loadingMessage = 'Загрузка...'
 const errorLoadingMessage = 'Ошибка обновления таблицы'
@@ -42,14 +42,8 @@ export function Table({dirEntities, path, sort}: {
 
         if (parentTr?.classList.contains(styles.selectable_row)) {
             const dirNameElement = parentTr.querySelector(`.${styles.table__cell_name}`);
-            if (dirNameElement) {
-                const dirName = dirNameElement.textContent ?? '';
-
-                if (path.value === pathSeparator) {
-                    path.set(pathSeparator + dirName);
-                } else {
-                    path.set(`${path.value}${pathSeparator}${dirName}`);
-                }
+            if (dirNameElement && dirNameElement.textContent) {
+                path.set(buildAbsolutePath(path.value, dirNameElement.textContent))
             }
         }
     }

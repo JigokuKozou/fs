@@ -12,7 +12,7 @@ export enum SortOrder {
 
 export enum DirSeparator {
     SLASH = '/',
-    BACKSLASH = '\\'
+    BACKSLASH = "\\"
 }
 
 // Класс представляющий ответ сервера

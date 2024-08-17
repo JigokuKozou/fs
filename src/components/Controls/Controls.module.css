@@ -12,7 +12,6 @@
     border: 2px solid var(--main-text-color);
 
     text-overflow: ellipsis; /* Обрезаем текст с многоточием, если он не помещается */
-    direction: rtl; /* Устанавливаем направление текста справа налево */
     text-align: left; /* Выровнять текст по левому краю */
 }
 

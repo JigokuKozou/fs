@@ -1,12 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Controls} from './components/Controls/Controls';
 import {Table} from './components/Table/Table';
 import * as styles from './App.module';
 import {DirEntity, DirSeparator, FsClient, SortOrder} from './model';
+import {setDirSeparator} from "./path";
 
 const fsClient = new FsClient()
-
-export let pathSeparator: DirSeparator
 
 export function App() {
     const [path, setPath] = useState('')
@@ -14,25 +13,30 @@ export function App() {
     const [dirEntities, setDirEntities] = useState<{ isLoading: boolean, value: DirEntity[] | null }>(
         {isLoading: true, value: null})
 
-    const loadDirEntities = () => {
-        setDirEntities({isLoading: true, value: null})
+    const previousPathRef = useRef<string | null>(null)
+
+    useEffect(() => {
+        if (previousPathRef.current === path)
+            return
+
+        setDirEntities({isLoading: true, value: null});
         fsClient.fetchDirEntities(path, sort)
             .then(response => {
                 if (response.entities) {
                     setDirEntities({isLoading: false, value: response.entities})
+                    if (previousPathRef.current === null) {
+                        setPath(response.root_dir)
+                        previousPathRef.current = response.root_dir
+                        setDirSeparator(response.root_dir.includes(DirSeparator.SLASH) ?
+                            DirSeparator.SLASH : DirSeparator.BACKSLASH)
+                    } else previousPathRef.current = path
                 }
-                setPath(response.root_dir)
             })
             .catch(error => {
-                setDirEntities({isLoading: false, value: null})
-                console.error(error)
-            })
-    }
-
-    useEffect(() => {
-        loadDirEntities()
-        pathSeparator = path.includes(DirSeparator.SLASH) ? DirSeparator.SLASH : DirSeparator.BACKSLASH
-    }, [path, sort])
+                setDirEntities({isLoading: false, value: null});
+                console.error(error);
+            });
+    }, [path, sort]);
 
     const toggleSort = () => {
         setSort(sort === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC)
@@ -45,8 +49,10 @@ export function App() {
             </header>
             <section className={styles.wrapper__container}>
                 <div className={styles.wrapper__container__content}>
-                    <Controls path={{value: path, set: setPath}} isLoading={dirEntities.isLoading}/>
-                    <Table dirEntities={dirEntities} path={{value: path, set: setPath}}
+                    <Controls path={{value: path, set: setPath}}
+                              isLoading={dirEntities.isLoading}/>
+                    <Table dirEntities={dirEntities}
+                           path={{value: path, set: setPath}}
                            sort={{value: sort, toggle: toggleSort}}/>
                 </div>
             </section>

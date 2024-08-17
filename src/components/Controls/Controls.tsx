@@ -1,7 +1,7 @@
 import React from "react";
 import * as styles from './Controls.module'
 import {MyButton} from "../UI/button/MyButton";
-import {pathSeparator} from "../../App";
+import {isRootDirectory, removeLastDirectory} from "../../path";
 
 export function Controls({path, isLoading}: {
     path: { value: string, set: (path: string) => void },
@@ -16,7 +16,7 @@ export function Controls({path, isLoading}: {
             <div className={styles.wrapper}>
                 <MyButton
                     onClick={() => path.set(removeLastDirectory(path.value))}
-                    disabled={isLoading}
+                    disabled={isLoading || isRootDirectory(path.value)}
                 >Назад</MyButton>
                 <input
                     className={styles.wrapper__root_path}
@@ -27,15 +27,4 @@ export function Controls({path, isLoading}: {
                 <MyButton>Статистика</MyButton>
             </div>
         </>)
-}
-
-function removeLastDirectory(path: string): string {
-    // Найти последнюю позицию разделителя
-    const lastSlashIndex = path.lastIndexOf(pathSeparator);
-
-    // Если разделитель не найден, вернуть оригинальный путь
-    if (lastSlashIndex === -1) return path;
-
-    // Вернуть путь до последнего разделителя
-    return path.substring(0, lastSlashIndex);
 }

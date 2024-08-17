@@ -4,18 +4,16 @@
 # Не игнорировать .gitignore
 !.gitignore
 
-
 # Не игнорировать go.mod и go.sum
 !go.mod
 !go.sum
-
 
 # Не игнорировать .go файлы и файлы в internal/
 !*.go
 !internal/
 
-# Не игнорировать файлы в web/
-!web/
+# Не игнорировать файлы frontend
+!src/
 
 # Не игнорировать .env
 !.env
@@ -28,8 +26,6 @@ node_modules
 
 # Не игнорировать конфигурацию webpack
 !webpack.config.js
-!.babelrc
-web/dist
 
 # Не игнорировать Docker
 !docker/

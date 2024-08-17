@@ -1,0 +1,46 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 100vh;
+    max-height: 100vh;
+}
+
+.wrapper__footer,
+.wrapper__header {
+    /* Не растёт по высоте, не сжимается, занимает всю доступную ширину */
+    flex: 0 0 auto;
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
+    text-align: center;
+    user-select: none;
+}
+
+.wrapper__header__title {
+    font-size: 2em;
+}
+
+.wrapper__footer__title {
+    margin: 20px;
+}
+
+.wrapper__container,
+.wrapper__container__content {
+    flex-grow: 1;
+    overflow-y: hidden; /* Ограничиваем высоту контейнера */
+
+    display: flex;
+    flex-direction: column;
+}
+
+.wrapper__container {
+    padding: 10px;
+}
+
+.wrapper__container__content {
+    gap: 10px;
+
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}

@@ -1,0 +1,21 @@
+.wrapper {
+    display: flex;
+    gap: 1rem;
+}
+
+.wrapper__root_path {
+    outline: none; /* Убирает стандартное выделение браузера при фокусе */
+    cursor: default;
+    width: 100%; /* Устанавливаем фиксированную ширину для демонстрации прокрутки */
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 2px solid var(--main-text-color);
+
+    text-overflow: ellipsis; /* Обрезаем текст с многоточием, если он не помещается */
+    direction: rtl; /* Устанавливаем направление текста справа налево */
+    text-align: left; /* Выровнять текст по левому краю */
+}
+
+.wrapper__root_path:focus {
+    outline: none; /* Убирает стандартное выделение браузера при фокусе */
+}

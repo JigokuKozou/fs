@@ -30,7 +30,7 @@ func Run() error {
 		Handler: http.DefaultServeMux,
 	}
 
-	http.Handle("/", http.FileServer(http.Dir("./web/dist")))
+	http.Handle("/", http.FileServer(http.Dir("./public")))
 
 	http.HandleFunc("/fs", fsHandler)
 

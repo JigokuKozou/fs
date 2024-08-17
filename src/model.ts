@@ -10,6 +10,11 @@ export enum SortOrder {
     DESC = 'desc'
 }
 
+export enum DirSeparator {
+    SLASH = '/',
+    BACKSLASH = '\\'
+}
+
 // Класс представляющий ответ сервера
 export class FsClientResponse {
     public root_dir: string                 // Корневой путь
@@ -42,12 +47,12 @@ export class DirEntity {
 export class FsClient {
 
     // Запрос на получение информации о содержимом директории
-    public async fetchDirEntity(rootPath: string, sortType: SortOrder): Promise<FsClientResponse> {
+    public async fetchDirEntities(rootPath: string, sortType: SortOrder): Promise<FsClientResponse> {
         const url = `/fs?root=${encodeURIComponent(rootPath)}&sort=${encodeURIComponent(sortType)}`;
         try {
-            const response = await fetch(url, { method: "GET" })
-            if (response.status === 500) {
-                throw new Error("Статус ответа сервера: 500 Internal Server Error")
+            const response = await fetch(url, {method: "GET"})
+            if (response.status !== 200) {
+                throw new Error("Статус ответа сервера: " + response.status)
             }
 
             const jsonBody = await response.json()

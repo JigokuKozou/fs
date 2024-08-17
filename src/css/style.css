@@ -1,22 +1,21 @@
 /*
+ * Здесь импортируется шрифт Roboto из Google Fonts.
+ * Это позволяет использовать этот шрифт в приложении.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+/*
  * Здесь определены переменные CSS, которые используются для настройки стилей в приложении.
  */
-
 :root {
     --main-bg-color: white; /* Цвет фона */
     --main-text-color: black; /* Цвет текста */
-    
+
     --bg-color-hover: #afbacc; /* Цвет фона кнопок */
 
     --header-bg-color: black; /* Цвет фона заголовка */
     --header-text-color: white; /* Цвет текста заголовка */
 }
-
-/*
- * Здесь импортируется шрифт Roboto из Google Fonts.
- * Это позволяет использовать этот шрифт в приложении.
- */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 body {
     display: flex; /* Отображается в виде строки */
@@ -28,58 +27,25 @@ body {
     color: var(--main-text-color);
 }
 
-button {
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    border: 2px solid var(--main-text-color);
-    border-radius: 10px;
-    padding: 5px 10px;
-    cursor: pointer;
-    box-shadow: 0 3px #999;
-}
-button:hover {
-    background-color: var(--bg-color-hover);
-}
-button:active {
-    background-color: var(--bg-color-hover);
-    box-shadow: 0 1px #666;
-    transform: translateY(2px);
-}
-button:disabled {
-    cursor: not-allowed;
-    pointer-events: none;
-    box-shadow: 0 3px #999;  /* исходная тень */
-    transform: none; /* не смещать кнопку */
-}
-
 #statistics-button {
     margin-left: 10px;
-}
-
-.selectable {
-    cursor: pointer;
-    user-select: none;
-}
-.selectable:hover {
-    background-color: var(--bg-color-hover);
-}
-.selectable:active {
-    background-color: var(--main-bg-color);
 }
 
 .clickable_text {
     cursor: pointer;
 }
+
 .clickable_text:hover {
     color: #2b2b2b;
 }
+
 .clickable_text:active {
     color: var(--main-text-color);
 }
 
 .header {
     /* Заголовок не растёт по высоте, не сжимается, занимает всю доступную ширину */
-    flex: 0 0 auto; 
+    flex: 0 0 auto;
     background-color: var(--header-bg-color);
     color: var(--header-text-color);
 }
@@ -92,7 +58,7 @@ button:disabled {
 
 .container {
     /* Контейнер не растёт по высоте, не сжимается, занимает всю доступную ширину */
-    flex: 1 0 auto; 
+    flex: 1 0 auto;
     overflow-y: auto; /* Если контент превышает высоту контейнера, появляется полоса прокрутки */
 }
 
@@ -119,7 +85,7 @@ button:disabled {
 .dir_table {
     width: 100%;
     margin-block: 10px;
-    
+
     /* Удаляем межколоночные отступы */
     border-spacing: 0;
 
@@ -133,6 +99,7 @@ button:disabled {
     border-bottom: 2px solid var(--main-text-color);
     cursor: default;
 }
+
 tr td:first-child {
     text-align: center;
 }
@@ -160,12 +127,13 @@ tr td:first-child {
     display: inline-block;
     margin-right: 3px;
     width: 0;
-    height: 0;  
-    border-left: 5px solid transparent; 
-    border-right: 5px solid transparent; 
-    border-bottom: 10px solid black; 
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 10px solid black;
     transition: transform 0.3s;
 }
+
 .arrow.rotate {
     transform: rotate(180deg);
 }
@@ -174,7 +142,7 @@ tr td:first-child {
     text-align: center;
 }
 
-.no-select-text {
+.no_select_text {
     -webkit-user-select: none; /* Chrome/Safari */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE/Edge */
